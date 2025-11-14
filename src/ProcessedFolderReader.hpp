@@ -4,7 +4,7 @@
 
 #include "FusionFolder.hpp"
 #include "LapisFolder.hpp"
-#include "LidrFolder.hpp"
+#include "LidRFolder.hpp"
 
 namespace processedfolder {
 	static std::unique_ptr<ProcessedFolder> getProcessedFolderReader(const std::string& folder)

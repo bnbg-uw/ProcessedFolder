@@ -3,7 +3,7 @@
 namespace processedfolder {
 	namespace fs = std::filesystem;
 
-	FusionFolder::FusionFolder(const std::filesystem::path& folder)
+	FusionFolder::FusionFolder(const fs::path& folder)
 	{
 		if (!fs::is_directory(folder)) {
 			throw std::invalid_argument("Folder does not exist");
@@ -48,7 +48,7 @@ namespace processedfolder {
 		return _folder;
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::cover(bool allReturns) const
+	std::optional<fs::path> FusionFolder::cover(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -60,7 +60,7 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::p95(bool allReturns) const
+	std::optional<fs::path> FusionFolder::p95(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -72,16 +72,16 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::rumple(bool allReturns) const
+	std::optional<fs::path> FusionFolder::rumple(bool allReturns) const
 	{
 		if (!allReturns) {
 			std::cout << "First return rumple is not a metric calculated by fusion\n";
-			return std::optional<std::filesystem::path>();
+			return std::optional<fs::path>();
 		}
 		return _getMetric("canopy_rumple", "CanopyMetrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::p25(bool allReturns) const
+	std::optional<fs::path> FusionFolder::p25(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -93,7 +93,7 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::meanHeight(bool allReturns) const
+	std::optional<fs::path> FusionFolder::meanHeight(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -105,7 +105,7 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::stdDevHeight(bool allReturns) const
+	std::optional<fs::path> FusionFolder::stdDevHeight(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -117,7 +117,7 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::maskRaster(bool allReturns) const
+	std::optional<fs::path> FusionFolder::maskRaster(bool allReturns) const
 	{
 		std::string search;
 		if (allReturns) {
@@ -129,23 +129,23 @@ namespace processedfolder {
 		return _getMetric(search, "Metrics");
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::slope(lapis::coord_t radius, lapis::LinearUnit unit) const
+	std::optional<fs::path> FusionFolder::slope(lapis::coord_t radius, lapis::LinearUnit unit) const
 	{
 		auto converter = lapis::LinearUnitConverter(unit, units());
 		return _getTopoMetric("slope", converter(radius));
 	}
-	std::optional<std::filesystem::path> FusionFolder::aspect(lapis::coord_t radius, lapis::LinearUnit unit) const
+	std::optional<fs::path> FusionFolder::aspect(lapis::coord_t radius, lapis::LinearUnit unit) const
 	{
 		auto converter = lapis::LinearUnitConverter(unit, units());
 		return _getTopoMetric("aspect", converter(radius));
 	}
-	std::optional<std::filesystem::path> FusionFolder::tpi(lapis::coord_t radius, lapis::LinearUnit unit) const
+	std::optional<fs::path> FusionFolder::tpi(lapis::coord_t radius, lapis::LinearUnit unit) const
 	{
 		auto converter = lapis::LinearUnitConverter(unit, units());
 		return _getTopoMetric("tpi", converter(radius));
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::tileLayoutVector() const
+	std::optional<fs::path> FusionFolder::tileLayoutVector() const
 	{
 		if (fs::exists(_layoutPath)) {
 			return _layoutPath;
@@ -177,7 +177,7 @@ namespace processedfolder {
 	std::optional<lapis::Alignment> FusionFolder::csmAlignment() const
 	{
 		auto ntile = nTiles();
-		std::optional<std::filesystem::path> file;
+		std::optional<fs::path> file;
 		for (int cell = 0; cell < ntile; ++cell) {
 			file = csmRaster(cell);
 			if (file) {
@@ -224,11 +224,44 @@ namespace processedfolder {
 		
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::highPoints(int index) const {
+	std::optional<fs::path> FusionFolder::highPoints(int index) const {
 		asfd
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::watershedSegmentRaster(int index) const
+	template<class T>
+	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::Raster<bool>& tileLayout, std::function<std::optional<fs::path>(int)> byTile) {
+		std::optional<lapis::Raster<T>> out{};
+
+		lapis::Extent projE = lapis::QuadExtent(e, tileLayout.crs()).outerExtent();
+		if (!projE.overlaps(tileLayout)) {
+			return std::optional<lapis::Raster<T>>{};
+		}
+
+		for (auto cell : lapis::CellIterator(tileLayout, projE, lapis::SnapType::out)) {
+			std::optional<fs::path> filePath = byTile(cell);
+			if (!filePath) {
+				continue;
+			}
+			try {
+				if (!out.has_value()) {
+					lapis::Alignment a{ filePath.value().string() };
+					a.defineCRS(tileLayout.crs());
+					a = extendAlignment(a, projE, lapis::SnapType::out);
+					a = cropAlignment(a, projE, lapis::SnapType::out);
+					out = Raster<T>{ a };
+				}
+				lapis::Raster<T> tile{ filePath.value().string(), projE, lapis::SnapType::out };
+				tile.defineCRS(tileLayout.crs());
+				out->overlay(tile, [](T a, T b) {return a; });
+			}
+			catch (LapisGisException e) {
+				continue;
+			}
+		}
+		return out;
+	}
+
+	std::optional<fs::path> FusionFolder::watershedSegmentRaster(int index) const
 	{
 		return _getTileMetric("segments_Basin_Map.img", index);
 	}
@@ -238,7 +271,7 @@ namespace processedfolder {
 		asdf
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::intensityRaster(int index) const
+	std::optional<fs::path> FusionFolder::intensityRaster(int index) const
 	{
 		return _getTileMetric("segments_INT_GE_2m_UNITS.img", index);
 	}
@@ -248,7 +281,7 @@ namespace processedfolder {
 		asdf
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::maxHeightRaster(int index) const
+	std::optional<fs::path> FusionFolder::maxHeightRaster(int index) const
 	{
 		return _getTileMetric("segments_Max_Height_Map.img", index);
 	}
@@ -258,7 +291,7 @@ namespace processedfolder {
 		sad
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::csmRaster(int index) const
+	std::optional<fs::path> FusionFolder::csmRaster(int index) const
 	{
 		if (index < 0 || index >= nTiles()) {
 			return std::optional<std::string>();
@@ -283,7 +316,7 @@ namespace processedfolder {
 		ads
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const
+	std::optional<fs::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const
 	{
 
 		static std::regex units{ "UNITS" };
@@ -302,10 +335,10 @@ namespace processedfolder {
 			return fullPathFeet.string();
 		}
 
-		return std::optional<std::filesystem::path>();
+		return std::optional<fs::path>();
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::_getTopoMetric(const std::string& basename, lapis::coord_t radiusMeters) const
+	std::optional<fs::path> FusionFolder::_getTopoMetric(const std::string& basename, lapis::coord_t radiusMeters) const
 	{
 		std::string folderBaseName = "TopoMetrics";
 		auto lookForFile = [&](const std::string& resName, lapis::coord_t convFactor)->std::optional<std::string> {
@@ -339,7 +372,7 @@ namespace processedfolder {
 		return lookForFile("_98p424FEET", 0.3048);
 	}
 
-	std::optional<std::filesystem::path> FusionFolder::_getTileMetric(const std::string& basename, int index) const
+	std::optional<fs::path> FusionFolder::_getTileMetric(const std::string& basename, int index) const
 	{
 		if (index < 0 || index >= nTiles()) {
 			return std::optional<fs::path>();
