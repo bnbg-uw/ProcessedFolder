@@ -4,10 +4,6 @@ SETLOCAL
 
 rmdir /S /Q build
 
-pushd src\lapisapi
-git pull
-popd
-
 pushd src\lapisgis
 git pull
 popd
