@@ -2,16 +2,19 @@
 #ifndef PROCESSEDFOLDER_H
 #define PROCESSEDFOLDER_H
 
-#include<string>
-#include<optional>
-#include<memory>
+#include "ProcessedFolder_pch.hpp"
+#include "LapisGis/src/Raster.hpp"
 
-#include"LICO/LICO.hpp"
+namespace processedfolder {
 
-namespace lidar {
-
-	namespace sp = spatial;
-	namespace fs = std::filesystem;
+	static std::string stringOrThrow(std::optional<std::string> check) {
+		if (check.has_value())
+			return check.value();
+		else {
+			std::cerr << "Requested file does not exist\n";
+			throw FileNotFoundException();
+		}
+	}
 
 	class FileNotFoundException : public std::runtime_error {
 	public:
@@ -19,45 +22,53 @@ namespace lidar {
 		FileNotFoundException(std::string s) : std::runtime_error(s) {}
 	};
 
-	using crownFunc = std::function<void(lico::Tao&)>;
-
 	class ProcessedFolder {
 	public:
-		virtual fs::path getDir() const = 0;
+		virtual const std::filesystem::path dir() const = 0;
 
-		virtual std::optional<std::string> getCover() const = 0;
-		virtual std::optional<std::string> getP95() const = 0;
-		virtual std::optional<std::string> getRumple() const = 0;
-		virtual std::optional<std::string> getP25() const = 0;
-		virtual std::optional<std::string> getMeanHeight() const = 0;
-		virtual std::optional<std::string> getStdDevHeight() const = 0;
+		//these are convenience shortcuts for get metric by name
+		virtual std::optional<std::filesystem::path> cover(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> p95(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> rumple(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> p25(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> meanHeight(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> stdDevHeight(bool allReturns = true) const = 0;
+		virtual std::optional<std::filesystem::path> maskRaster(bool allReturns = true) const = 0;
 
-		virtual std::optional<std::string> getSlope(sp::coord_t radiusMeters) const = 0;
-		virtual std::optional<std::string> getAspect(sp::coord_t radiusMeters) const = 0;
-		virtual std::optional<std::string> getTPI(sp::coord_t radiusMeters) const = 0;
+		//these require the radius for compatibility with FUSION
+		virtual std::optional<std::filesystem::path> slope(lapis::coord_t radius, lapis::LinearUnit unit) const = 0;
+		virtual std::optional<std::filesystem::path> aspect(lapis::coord_t radius, lapis::LinearUnit unit) const = 0;
+		virtual std::optional<std::filesystem::path> tpi(lapis::coord_t radius, lapis::LinearUnit unit) const = 0;
 		
-		virtual std::optional<std::string> getMaskRaster() const = 0;
-		virtual std::optional<std::string> getTileLayoutVector() const = 0;
+		//utility functions
+		virtual std::optional<std::filesystem::path> tileLayoutVector() const = 0;
 		virtual int nTiles() const = 0;
-		virtual const sp::CoordRef& getProjection() const = 0;
-		virtual sp::coord_t getConvFactor() const = 0;
-		virtual std::optional<sp::Alignment> getMetricAlignment() const = 0;
-		virtual std::optional<sp::Extent> extentByTile(int index) const = 0;
+		virtual const lapis::CoordRef crs() const = 0;
+		virtual const lapis::Extent& extent() const = 0;
+		virtual std::optional<lapis::LinearUnit> units() const = 0;
+		virtual std::optional<lapis::Alignment> metricAlignment() const = 0;
+		virtual std::optional<lapis::Alignment> csmAlignment() const = 0;
 
-		virtual lico::TaoList readAllHighPoints(int nThreads, double fixedRadius = 0) const = 0;
-		virtual lico::TaoList getHighPointsByTile(int i, double fixedRadius = 0) const = 0;
+		virtual std::optional<lapis::Extent> extentByTile(int index) const = 0;
 
-		virtual std::optional<std::string> getSegmentRaster(int index) const = 0;
-		virtual std::optional<std::string> getCanopyIntensityRaster(int index) const = 0;
-		virtual std::optional<std::string> getMaxHeightRaster(int index) const = 0;
-		virtual std::optional<std::string> getCsmRaster(int index) const = 0;
+		virtual lapis::VectorDataset<lapis::Point> allHighPoints() const = 0;
+		virtual lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const = 0;
+		virtual std::optional<std::filesystem::path> highPoints(int index) const = 0;
+
+		virtual std::optional<std::filesystem::path> watershedSegmentRaster(int index) const = 0;
+		virtual std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const = 0;
+
+		virtual std::optional<std::filesystem::path> intensityRaster(int index) const = 0;
+		virtual std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const = 0;
+
+		virtual std::optional<std::filesystem::path> maxHeightRaster(int index) const = 0;
+		virtual std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const = 0;
+
+		virtual std::optional<std::filesystem::path> csmRaster(int index) const = 0;
+		virtual std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const = 0;
 
 		virtual ~ProcessedFolder() = default;
-
 	};
-
-	std::unique_ptr<ProcessedFolder> getProcessedFolderReader(const std::string& folder);
-	std::string stringOrThrow(std::optional<std::string> check);
-}
+} //namespace processedfolder
 
 #endif
