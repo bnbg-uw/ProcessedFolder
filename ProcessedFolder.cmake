@@ -6,7 +6,11 @@ file(GLOB PROCESSEDFOLDER_SOURCES
 	${PROCESSEDFOLDER_DIR}/src/*.hpp
 	${PROCESSEDFOLDER_DIR}/src/*.cpp)
 
-include("${PROCESSEDFOLDER_DIR}/src/LapisGis/lapisgis.cmake")
+if(EXISTS "${PROCESSEDFOLDER_DIR}/src/LapisGis/lapisgis.cmake")
+	include("${PROCESSEDFOLDER_DIR}/src/LapisGis/lapisgis.cmake")
+else()
+	include("${PROCESSEDFOLDER_DIR}/../LapisGis/lapisgis.cmake")
+endif()
 
 set(PROCESSEDFOLDER_EXTERNAL_INCLUDES
 	${LAPISGIS_INCLUDES}
