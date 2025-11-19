@@ -7,7 +7,7 @@
 #include "LidRFolder.hpp"
 
 namespace processedfolder {
-	static std::unique_ptr<ProcessedFolder> getProcessedFolderReader(const std::string& folder)
+	static std::unique_ptr<ProcessedFolder> processedFolderReader(const std::string& folder)
 	{
 		try {
 			std::unique_ptr<ProcessedFolder> out = std::make_unique<FusionFolder>(folder);
