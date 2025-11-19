@@ -6,21 +6,21 @@
 #include "LapisGis/src/Raster.hpp"
 
 namespace processedfolder {
-
-	static std::string stringOrThrow(std::optional<std::string> check) {
-		if (check.has_value())
-			return check.value();
-		else {
-			std::cerr << "Requested file does not exist\n";
-			throw FileNotFoundException();
-		}
-	}
-
+	
 	class FileNotFoundException : public std::runtime_error {
 	public:
 		FileNotFoundException() : std::runtime_error("") {}
 		FileNotFoundException(std::string s) : std::runtime_error(s) {}
 	};
+
+	static std::string stringOrThrow(std::optional<std::filesystem::path> check) {
+		if (check.has_value())
+			return check.value().string();
+		else {
+			std::cerr << "Requested file does not exist\n";
+			throw FileNotFoundException();
+		}
+	}
 
 	class ProcessedFolder {
 	public:
@@ -42,29 +42,29 @@ namespace processedfolder {
 		
 		//utility functions
 		virtual std::optional<std::filesystem::path> tileLayoutVector() const = 0;
-		virtual int nTiles() const = 0;
+		virtual size_t nTiles() const = 0;
 		virtual const lapis::CoordRef crs() const = 0;
 		virtual const lapis::Extent& extent() const = 0;
 		virtual std::optional<lapis::LinearUnit> units() const = 0;
 		virtual std::optional<lapis::Alignment> metricAlignment() const = 0;
 		virtual std::optional<lapis::Alignment> csmAlignment() const = 0;
 
-		virtual std::optional<lapis::Extent> extentByTile(int index) const = 0;
+		virtual std::optional<lapis::Extent> extentByTile(size_t index) const = 0;
 
 		virtual lapis::VectorDataset<lapis::Point> allHighPoints() const = 0;
 		virtual lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const = 0;
-		virtual std::optional<std::filesystem::path> highPoints(int index) const = 0;
+		virtual std::optional<std::filesystem::path> highPoints(size_t index) const = 0;
 
-		virtual std::optional<std::filesystem::path> watershedSegmentRaster(int index) const = 0;
+		virtual std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const = 0;
 
-		virtual std::optional<std::filesystem::path> intensityRaster(int index) const = 0;
+		virtual std::optional<std::filesystem::path> intensityRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const = 0;
 
-		virtual std::optional<std::filesystem::path> maxHeightRaster(int index) const = 0;
+		virtual std::optional<std::filesystem::path> maxHeightRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const = 0;
 
-		virtual std::optional<std::filesystem::path> csmRaster(int index) const = 0;
+		virtual std::optional<std::filesystem::path> csmRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const = 0;
 
 		virtual ~ProcessedFolder() = default;

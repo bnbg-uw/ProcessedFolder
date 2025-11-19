@@ -152,7 +152,7 @@ namespace processedfolder {
 		}
 		return std::optional<fs::path>();
 	}
-	int FusionFolder::nTiles() const
+	size_t FusionFolder::nTiles() const
 	{
 		return _layout.nFeature();
 	}
@@ -193,7 +193,7 @@ namespace processedfolder {
 		a = extendAlignment(a, extent(), lapis::SnapType::out);
 		return a;
 	}
-	std::optional<lapis::Extent> FusionFolder::extentByTile(int index) const
+	std::optional<lapis::Extent> FusionFolder::extentByTile(size_t index) const
 	{
 		if (index < 0 || index >= nTiles()) {
 			return std::optional<lapis::Extent>();
@@ -204,7 +204,7 @@ namespace processedfolder {
 	lapis::VectorDataset<lapis::Point> FusionFolder::allHighPoints() const
 	{
 		lapis::VectorDataset<lapis::Point> out{};
-		int ntile = nTiles();
+		auto ntile = nTiles();
 		std::optional<fs::path> file;
 		for (int i = 0; i < ntile; ++i) {
 			file = highPoints(i);
@@ -221,24 +221,57 @@ namespace processedfolder {
 	}
 
 	lapis::VectorDataset<lapis::Point> FusionFolder::highPoints(const lapis::Extent& e) const {
-		
+		lapis::VectorDataset<lapis::Point> full{};
+
+		lapis::Extent projE = lapis::QuadExtent(e, _layout.crs()).outerExtent();
+		if (!projE.overlaps(_layout.extent())) {
+			return full;
+		}
+
+		for (size_t i = 0; i < _layout.nFeature(); ++i) {
+			std::optional<fs::path> filePath = highPoints(i);
+			if (filePath) {
+				if (!full.nFeature()) {
+					full = lapis::VectorDataset<lapis::Point>(filePath.value());
+				}
+				else {
+					full.appendFile(filePath.value());
+				}
+			}
+		}
+		auto out = lapis::emptyVectorDatasetFromTemplate(full);
+		for (auto ft : full) {
+			if (e.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
+				out.addFeature(ft);
+			}
+		}
+		return out;
 	}
 
-	std::optional<fs::path> FusionFolder::highPoints(int index) const {
-		asfd
+	std::optional<fs::path> FusionFolder::highPoints(size_t index) const {
+		fs::path segments = _folder / "Segments_2p4606FEET";
+		if (!fs::exists(segments)) {
+			segments = _folder / "Segments_0p75METERS";
+		}
+		auto identifier = this->_layout.getStringField(index, "Identifier");
+		fs::path thissegments = segments / (identifier + "_segments_Polygons.shp");
+		if (fs::exists(thissegments)) {
+			return thissegments;
+		}
+		return std::optional<fs::path>();
 	}
 
 	template<class T>
-	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::Raster<bool>& tileLayout, std::function<std::optional<fs::path>(int)> byTile) {
+	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::VectorDataset<lapis::Polygon>& tileLayout, std::function<std::optional<fs::path>(size_t)> byTile) {
 		std::optional<lapis::Raster<T>> out{};
 
 		lapis::Extent projE = lapis::QuadExtent(e, tileLayout.crs()).outerExtent();
-		if (!projE.overlaps(tileLayout)) {
+		if (!projE.overlaps(tileLayout.extent())) {
 			return std::optional<lapis::Raster<T>>{};
 		}
 
-		for (auto cell : lapis::CellIterator(tileLayout, projE, lapis::SnapType::out)) {
-			std::optional<fs::path> filePath = byTile(cell);
+		for (size_t i = 0; i < tileLayout.nFeature(); ++i) {
+			std::optional<fs::path> filePath = byTile(i);
 			if (!filePath) {
 				continue;
 			}
@@ -248,50 +281,50 @@ namespace processedfolder {
 					a.defineCRS(tileLayout.crs());
 					a = extendAlignment(a, projE, lapis::SnapType::out);
 					a = cropAlignment(a, projE, lapis::SnapType::out);
-					out = Raster<T>{ a };
+					out = lapis::Raster<T>{ a };
 				}
 				lapis::Raster<T> tile{ filePath.value().string(), projE, lapis::SnapType::out };
 				tile.defineCRS(tileLayout.crs());
 				out->overlay(tile, [](T a, T b) {return a; });
 			}
-			catch (LapisGisException e) {
+			catch (lapis::LapisGisException e) {
 				continue;
 			}
 		}
 		return out;
 	}
 
-	std::optional<fs::path> FusionFolder::watershedSegmentRaster(int index) const
+	std::optional<fs::path> FusionFolder::watershedSegmentRaster(size_t index) const
 	{
 		return _getTileMetric("segments_Basin_Map.img", index);
 	}
 
 	std::optional<lapis::Raster<int>> FusionFolder::watershedSegmentRaster(const lapis::Extent& e) const
 	{
-		asdf
+		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return watershedSegmentRaster(n); });
 	}
 
-	std::optional<fs::path> FusionFolder::intensityRaster(int index) const
+	std::optional<fs::path> FusionFolder::intensityRaster(size_t index) const
 	{
 		return _getTileMetric("segments_INT_GE_2m_UNITS.img", index);
 	}
 
 	std::optional<lapis::Raster<int>> FusionFolder::intensityRaster(const lapis::Extent& e) const
 	{
-		asdf
+		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return intensityRaster(n); });
 	}
 
-	std::optional<fs::path> FusionFolder::maxHeightRaster(int index) const
+	std::optional<fs::path> FusionFolder::maxHeightRaster(size_t index) const
 	{
 		return _getTileMetric("segments_Max_Height_Map.img", index);
 	}
 
 	std::optional<lapis::Raster<double>> FusionFolder::maxHeightRaster(const lapis::Extent& e) const
 	{
-		sad
+		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return maxHeightRaster(n); });
 	}
 
-	std::optional<fs::path> FusionFolder::csmRaster(int index) const
+	std::optional<fs::path> FusionFolder::csmRaster(size_t index) const
 	{
 		if (index < 0 || index >= nTiles()) {
 			return std::optional<std::string>();
@@ -313,12 +346,11 @@ namespace processedfolder {
 		return out;
 	}
 	std::optional<lapis::Raster<double>> FusionFolder::csmRaster(const lapis::Extent& e) const {
-		ads
+		return fineDataByExtentGeneric<double>(e, _layout, [&](int n) { return csmRaster(n); });
 	}
 
 	std::optional<fs::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const
 	{
-
 		static std::regex units{ "UNITS" };
 		fs::path metersFolder = folderBaseName + "_30METERS";
 		std::string metersName = std::regex_replace(basename, units, "2") + "_30METERS.img";
@@ -372,7 +404,7 @@ namespace processedfolder {
 		return lookForFile("_98p424FEET", 0.3048);
 	}
 
-	std::optional<fs::path> FusionFolder::_getTileMetric(const std::string& basename, int index) const
+	std::optional<fs::path> FusionFolder::_getTileMetric(const std::string& basename, size_t index) const
 	{
 		if (index < 0 || index >= nTiles()) {
 			return std::optional<fs::path>();

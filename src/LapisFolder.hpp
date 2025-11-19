@@ -29,12 +29,12 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> tpi(lapis::coord_t radius, lapis::LinearUnit unit) const override;
 
 		std::optional<std::filesystem::path> tileLayoutVector() const override;
-		int nTiles() const override;
-		int nTilesWithData() const;
-		std::string tileNameFromTile(int index) const;
-		std::string tileNameFromTile(int row, int col) const;
-		bool shouldTileExist(int n) const;
-		bool shouldTileExist(int row, int col) const;
+		size_t nTiles() const override;
+		size_t nTilesWithData() const;
+		std::string tileNameFromTile(size_t index) const;
+		std::string tileNameFromTile(lapis::rowcol_t row, lapis::rowcol_t col) const;
+		bool shouldTileExist(size_t n) const;
+		bool shouldTileExist(lapis::rowcol_t row, lapis::rowcol_t col) const;
 
 		const lapis::CoordRef crs() const override;
 		std::optional<lapis::LinearUnit> units() const override;
@@ -43,31 +43,31 @@ namespace processedfolder {
 		lapis::Alignment layoutAlignment() const;
 
 		const lapis::Extent& extent() const;
-		std::optional<lapis::Extent> extentByTile(int index) const override;
-		std::optional<lapis::Extent> extentByTile(int row, int col) const;
+		std::optional<lapis::Extent> extentByTile(size_t index) const override;
+		std::optional<lapis::Extent> extentByTile(lapis::rowcol_t row, lapis::rowcol_t col) const;
 
 		lapis::VectorDataset<lapis::Point> allHighPoints() const override;
-		std::optional<std::filesystem::path> highPoints(int index) const override;
-		std::optional<std::filesystem::path> highPoints(int row, int col) const;
+		std::optional<std::filesystem::path> highPoints(size_t index) const override;
+		std::optional<std::filesystem::path> highPoints(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const;
 
-		std::optional<std::filesystem::path> mcGaugheyPolygons(int index) const;
-		std::optional<std::filesystem::path> mcGaugheyPolygons(int row, int col) const;
+		std::optional<std::filesystem::path> mcGaugheyPolygons(size_t index) const;
+		std::optional<std::filesystem::path> mcGaugheyPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const;
 
-		std::optional<std::filesystem::path> watershedSegmentRaster(int index) const override;
-		std::optional<std::filesystem::path> watershedSegmentRaster(int row, int col) const;
+		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
+		std::optional<std::filesystem::path> watershedSegmentRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<int>> watershedSegmentRaster(const::lapis::Extent& e) const;
 
-		std::optional<std::filesystem::path> intensityRaster(int index) const override;
-		std::optional<std::filesystem::path> intensityRaster(int row, int col) const;
+		std::optional<std::filesystem::path> intensityRaster(size_t index) const override;
+		std::optional<std::filesystem::path> intensityRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> maxHeightRaster(int index) const override;
-		std::optional<std::filesystem::path> maxHeightRaster(int row, int col) const;
+		std::optional<std::filesystem::path> maxHeightRaster(size_t index) const override;
+		std::optional<std::filesystem::path> maxHeightRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> csmRaster(int index) const override;
-		std::optional<std::filesystem::path> csmRaster(int row, int col) const;
+		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
+		std::optional<std::filesystem::path> csmRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
 	private:

@@ -227,16 +227,16 @@ namespace processedfolder {
 		return std::optional<fs::path>();
 	}
 
-	int LapisFolder::nTiles() const
+	size_t LapisFolder::nTiles() const
 	{
 		return _layoutRaster.ncell();
 	}
 
 
-	int LapisFolder::nTilesWithData() const
+	size_t LapisFolder::nTilesWithData() const
 	{
-		int out = 0;
-		for (int cell : lapis::CellIterator(_layoutRaster)) {
+		size_t out = 0;
+		for (auto cell : lapis::CellIterator(_layoutRaster)) {
 			if (_layoutRaster[cell].value()) {
 				out++;
 			}
@@ -244,15 +244,15 @@ namespace processedfolder {
 		return out;
 	}
 
-	std::string LapisFolder::tileNameFromTile(int n) const
+	std::string LapisFolder::tileNameFromTile(size_t n) const
 	{
-		if (n < 0 || n >= _layoutRaster.ncell()) {
+		if (n < 0 || n >= (size_t)_layoutRaster.ncell()) {
 			return "Error";
 		}
 		return tileNameFromTile(_layoutRaster.rowFromCellUnsafe(n), _layoutRaster.colFromCellUnsafe(n));
 	}
 
-	std::string LapisFolder::tileNameFromTile(int row, int col) const
+	std::string LapisFolder::tileNameFromTile(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (col < 0 || row < 0 || col >= _layoutRaster.ncol() || row >= _layoutRaster.nrow()) {
 			return "Error";
@@ -268,15 +268,15 @@ namespace processedfolder {
 		return "Col" + padZeroes(col + 1, nDigits) + "_Row" + padZeroes(row + 1, nDigits); //the names are 1-indexed, but it's 0-indexed internally
 	}
 
-	bool LapisFolder::shouldTileExist(int n) const
+	bool LapisFolder::shouldTileExist(size_t n) const
 	{
-		if (n < 0 || n >= _layoutRaster.ncell()) {
+		if (n < 0 || n >= (size_t)_layoutRaster.ncell()) {
 			return false;
 		}
 		return _layoutRaster.atCellUnsafe(n).has_value();
 	}
 
-	bool LapisFolder::shouldTileExist(int row, int col) const
+	bool LapisFolder::shouldTileExist(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || col < 0 || row >= _layoutRaster.nrow() || col >= _layoutRaster.ncol()) {
 			return false;
@@ -320,7 +320,7 @@ namespace processedfolder {
 
 	std::optional<lapis::Alignment> LapisFolder::csmAlignment() const
 	{
-		int ntile = nTilesWithData();
+		auto ntile = nTiles();
 		std::optional<fs::path> file;
 		for (int cell = 0; cell < ntile; ++cell) {
 			file = csmRaster(cell);
@@ -348,12 +348,12 @@ namespace processedfolder {
 	}
 
 
-	std::optional<lapis::Extent> LapisFolder::extentByTile(int index) const
+	std::optional<lapis::Extent> LapisFolder::extentByTile(size_t index) const
 	{
 		if (index < 0) {
 			return std::optional<lapis::Extent>();
 		}
-		if (index >= _layoutRaster.ncell()) {
+		if (index >= (size_t)_layoutRaster.ncell()) {
 			return std::optional<lapis::Extent>();
 		}
 		if (!_layoutRaster[index].value()) {
@@ -362,7 +362,7 @@ namespace processedfolder {
 		return _layoutRaster.extentFromCell(index);
 	}
 
-	std::optional<lapis::Extent> LapisFolder::extentByTile(int row, int col) const
+	std::optional<lapis::Extent> LapisFolder::extentByTile(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || col < 0 || row >= _layoutRaster.nrow() || col >= _layoutRaster.ncol()) {
 			return std::optional<lapis::Extent>();
@@ -373,9 +373,9 @@ namespace processedfolder {
 	lapis::VectorDataset<lapis::Point> LapisFolder::allHighPoints() const
 	{
 		lapis::VectorDataset<lapis::Point> out{};
-		int ntile = nTiles();
+		auto ntile = nTiles();
 		std::optional<fs::path> file;
-		for (int cell = 0; cell < ntile; ++cell) {
+		for (size_t cell = 0; cell < ntile; ++cell) {
 			file = highPoints(cell);
 			if (file) {
 				if (out.nFeature()) {
@@ -389,9 +389,9 @@ namespace processedfolder {
 		return out;
 	}
 
-	std::optional<fs::path> LapisFolder::highPoints(int index) const
+	std::optional<fs::path> LapisFolder::highPoints(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::optional<fs::path>();
 		}
 
@@ -414,7 +414,7 @@ namespace processedfolder {
 		return std::optional<fs::path>();
 	}
 
-	std::optional<fs::path> LapisFolder::highPoints(int row, int col) const
+	std::optional<fs::path> LapisFolder::highPoints(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::optional<fs::path>();
@@ -425,30 +425,36 @@ namespace processedfolder {
 
 	lapis::VectorDataset<lapis::Point> LapisFolder::highPoints(const lapis::Extent& e) const
 	{
-		lapis::VectorDataset<lapis::Point> out{};
+		lapis::VectorDataset<lapis::Point> full{};
 
 		lapis::Extent projE = lapis::QuadExtent(e, _layoutRaster.crs()).outerExtent();
 		if (!projE.overlaps(_layoutRaster)) {
-			return out;
+			return full;
 		}
 
 		for (auto cell : lapis::CellIterator(_layoutRaster, projE, lapis::SnapType::out)) {
 			std::optional<fs::path> filePath = highPoints(cell);
 			if (filePath) {
-				if (!out.nFeature()) {
-					out = lapis::VectorDataset<lapis::Point>(filePath.value());
+				if (!full.nFeature()) {
+					full = lapis::VectorDataset<lapis::Point>(filePath.value());
 				}
 				else {
-					out.appendFile(filePath.value());
+					full.appendFile(filePath.value());
 				}
+			}
+		}
+		auto out = lapis::emptyVectorDatasetFromTemplate(full);
+		for (auto ft : full) {
+			if (e.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
+				out.addFeature(ft);
 			}
 		}
 		return out;
 	}
 
-	std::optional<fs::path> LapisFolder::mcGaugheyPolygons(int index) const
+	std::optional<fs::path> LapisFolder::mcGaugheyPolygons(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::optional<fs::path>();
 		}
 
@@ -472,7 +478,7 @@ namespace processedfolder {
 		return std::optional<fs::path>();
 	}
 
-	std::optional<fs::path> LapisFolder::mcGaugheyPolygons(int row, int col) const
+	std::optional<fs::path> LapisFolder::mcGaugheyPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::optional<fs::path>();
@@ -482,7 +488,7 @@ namespace processedfolder {
 	}
 
 	template<class T>
-	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::Raster<bool>& tileLayout, std::function<std::optional<fs::path>(int)> byTile) {
+	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::Raster<bool>& tileLayout, std::function<std::optional<fs::path>(size_t)> byTile) {
 		std::optional<lapis::Raster<T>> out{};
 
 		lapis::Extent projE = lapis::QuadExtent(e, tileLayout.crs()).outerExtent();
@@ -501,13 +507,13 @@ namespace processedfolder {
 					a.defineCRS(tileLayout.crs());
 					a = extendAlignment(a, projE, lapis::SnapType::out);
 					a = cropAlignment(a, projE, lapis::SnapType::out);
-					out = Raster<T>{ a };
+					out = lapis::Raster<T>{ a };
 				}
 				lapis::Raster<T> tile{ filePath.value().string(), projE, lapis::SnapType::out };
 				tile.defineCRS(tileLayout.crs());
 				out->overlay(tile, [](T a, T b) {return a; });
 			}
-			catch (LapisGisException e) {
+			catch (lapis::LapisGisException e) {
 				continue;
 			}
 		}
@@ -515,9 +521,9 @@ namespace processedfolder {
 	}
 
 
-	std::optional<fs::path> LapisFolder::watershedSegmentRaster(int index) const
+	std::optional<fs::path> LapisFolder::watershedSegmentRaster(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::nullopt;
 		}
 
@@ -543,7 +549,7 @@ namespace processedfolder {
 		return std::nullopt;
 	}
 
-	std::optional<fs::path> LapisFolder::watershedSegmentRaster(int row, int col) const
+	std::optional<fs::path> LapisFolder::watershedSegmentRaster(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::nullopt;
@@ -552,12 +558,12 @@ namespace processedfolder {
 	}
 
 	std::optional<lapis::Raster<int>> LapisFolder::watershedSegmentRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](int n) { return watershedSegmentRaster(n); });
+		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](size_t n) { return watershedSegmentRaster(n); });
 	}
 
-	std::optional<fs::path> LapisFolder::intensityRaster(int index) const
+	std::optional<fs::path> LapisFolder::intensityRaster(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::nullopt;
 		}
 		fs::path candidate = constructFullPathTif(dir() / "Intensity", name(), tileNameFromTile(index), "MeanCanopyIntensity", "");
@@ -571,7 +577,7 @@ namespace processedfolder {
 		return std::nullopt;
 	}
 
-	std::optional<fs::path> LapisFolder::intensityRaster(int row, int col) const
+	std::optional<fs::path> LapisFolder::intensityRaster(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::nullopt;
@@ -580,12 +586,12 @@ namespace processedfolder {
 	}
 
 	std::optional<lapis::Raster<int>> LapisFolder::intensityRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](int n) { return intensityRaster(n); });
+		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](size_t n) { return intensityRaster(n); });
 	}
 
-	std::optional<fs::path> LapisFolder::maxHeightRaster(int index) const
+	std::optional<fs::path> LapisFolder::maxHeightRaster(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::nullopt;
 		}
 		auto checkFolder = [&](const fs::path& folder)->std::optional<fs::path> {
@@ -614,7 +620,7 @@ namespace processedfolder {
 		return std::nullopt;
 	}
 
-	std::optional<fs::path> LapisFolder::maxHeightRaster(int row, int col) const
+	std::optional<fs::path> LapisFolder::maxHeightRaster(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::nullopt;
@@ -623,19 +629,19 @@ namespace processedfolder {
 	}
 
 	std::optional<lapis::Raster<double>> LapisFolder::maxHeightRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](int n) { return maxHeightRaster(n); });
+		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](size_t n) { return maxHeightRaster(n); });
 	}
 
 
-	std::optional<fs::path> LapisFolder::csmRaster(int index) const
+	std::optional<fs::path> LapisFolder::csmRaster(size_t index) const
 	{
-		if (index < 0 || index >= _layoutRaster.ncell()) {
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
 			return std::optional<fs::path>();
 		}
 		return checkAllUnits(_folder / "CanopySurfaceModel", name(), tileNameFromTile(index), "CanopySurfaceModel");
 	}
 
-	std::optional<fs::path> LapisFolder::csmRaster(int row, int col) const
+	std::optional<fs::path> LapisFolder::csmRaster(lapis::rowcol_t row, lapis::rowcol_t col) const
 	{
 		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
 			return std::optional<fs::path>();
@@ -644,7 +650,7 @@ namespace processedfolder {
 	}
 
 	std::optional<lapis::Raster<double>> LapisFolder::csmRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](int n) { return csmRaster(n); });
+		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](size_t n) { return csmRaster(n); });
 	}
 
 	std::optional<fs::path> LapisFolder::_getMetricByName(const std::string& name, bool preferAllReturns) const

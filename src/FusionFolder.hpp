@@ -25,28 +25,28 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> tpi(lapis::coord_t radius, lapis::LinearUnit unit) const override;
 
 		std::optional<std::filesystem::path> tileLayoutVector() const override;
-		int nTiles() const override;
+		size_t nTiles() const override;
 		const lapis::CoordRef crs() const override;
 		std::optional<lapis::LinearUnit> units() const override;
 		std::optional<lapis::Alignment> metricAlignment() const override;
 		std::optional<lapis::Alignment> csmAlignment() const override;
 
-		std::optional<lapis::Extent> extentByTile(int index) const override;
+		std::optional<lapis::Extent> extentByTile(size_t index) const override;
 
 		lapis::VectorDataset<lapis::Point> allHighPoints() const override;
-		std::optional<std::filesystem::path> highPoints(int index) const override;
+		std::optional<std::filesystem::path> highPoints(size_t index) const override;
 		lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> watershedSegmentRaster(int index) const override;
+		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
 		std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> intensityRaster(int index) const override;
+		std::optional<std::filesystem::path> intensityRaster(size_t index) const override;
 		std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> maxHeightRaster(int index) const override;
+		std::optional<std::filesystem::path> maxHeightRaster(size_t index) const override;
 		std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const override;
 
-		std::optional<std::filesystem::path> csmRaster(int index) const override;
+		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
 	private:
@@ -57,7 +57,7 @@ namespace processedfolder {
 
 		std::optional<std::filesystem::path> _getMetric(const std::string& basename, const std::string& folderBaseName) const;
 		std::optional<std::filesystem::path> _getTopoMetric(const std::string& basename, lapis::coord_t radiusMeters) const;
-		std::optional<std::filesystem::path> _getTileMetric(const std::string& basename, int index) const;
+		std::optional<std::filesystem::path> _getTileMetric(const std::string& basename, size_t index) const;
 	};
 }
 
