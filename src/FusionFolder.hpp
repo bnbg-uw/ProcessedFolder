@@ -5,6 +5,47 @@
 #include "ProcessedFolder.hpp"
 
 namespace processedfolder {
+	//Repairs an issue that emerges in certain fusion runs where the resolution (and by extension, the origin and extent) get slightly messed up
+	//You specify an expected resolution and origin and a tolerance. If the actual resolution is farther from the expected than the tolerance, the raster is considered unrepairable and an exception is thrown
+	//Otherwise, the resolution is set to be the expected resolution and the extent is snapped to the grid inferred from the origin and resolution
+	template<class T>
+	lapis::Raster<T> repairResolution(const lapis::Raster<T>& r, lapis::coord_t expectedXRes, lapis::coord_t expectedYRes, lapis::coord_t expectedXOrigin, lapis::coord_t expectedYOrigin, double tolerance = 0.1) {
+		if (r.xres() == expectedXRes && r.yres() == expectedYRes) {
+			return(r);
+		}
+		
+		auto xmin = r.xmin();
+		auto ymin = r.ymin();
+		auto xres = r.xres();
+		auto yres = r.yres();
+		if (r.xres() != expectedXRes) {
+			if (std::abs(r.xres() - expectedXRes) / expectedXRes < tolerance) {
+				xmin = std::round((r.xmin() - expectedXOrigin) / expectedXRes) * expectedXRes;
+				xres = expectedXRes;
+			}
+			else {
+				throw lapis::AlignmentMismatchException("Raster not repairable");
+			}
+		}
+		if (r.yres() != expectedYRes) {
+			if (std::abs(r.yres() - expectedYRes) / expectedYRes < tolerance) {
+				ymin = std::round((r.ymin() - expectedYOrigin) / expectedYRes) * expectedYRes;
+				yres = expectedYRes;
+			}
+			else {
+				throw lapis::AlignmentMismatchException("Raster not repairable");
+			}
+		}
+		
+		lapis::Alignment a{ xmin, ymin, r.nrow(), r.ncol(), xres, yres, r.crs() };
+		lapis::Raster<T> out{ a };
+		for (lapis::cell_t c = 0; c < out.ncell(); ++c) {
+			out[c].value() = r[c].value();
+			out[c].has_value() = r[c].has_value();
+		}
+		return(out);
+	}
+
 	class FusionFolder : public ProcessedFolder {
 	public:
 
