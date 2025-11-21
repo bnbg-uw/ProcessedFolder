@@ -40,7 +40,7 @@ namespace processedfolder {
 		lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const override;
 
 		std::optional<std::filesystem::path> topsRaster(size_t index) const;
-		std::optional<lapis::Raster<int>> topsRaster(const lapis::Extent& e) const;
+		std::optional<lapis::Raster<uint8_t>> topsRaster(const lapis::Extent& e) const;
 
 		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
 		std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const override;

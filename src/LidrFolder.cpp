@@ -141,7 +141,7 @@ namespace processedfolder {
 
 			auto basin = lapis::Raster<int>(stringOrThrow(watershedSegmentRaster(index)));
 			auto chm = lapis::Raster<double>(stringOrThrow(csmRaster(index)));
-			auto tops = lapis::Raster<int>(stringOrThrow(topsRaster(index)));
+			auto tops = lapis::Raster<uint8_t>(stringOrThrow(topsRaster(index)));
 
 			std::map<int, double> map;
 			for (lapis::cell_t c = 0; c < basin.ncell(); c++) {
@@ -152,7 +152,7 @@ namespace processedfolder {
 			}
 			auto convarea = basin.xres() * basin.yres();
 			for (lapis::cell_t c = 0; c < tops.ncell(); c++) {
-				if (tops[c].has_value() && tops[c].value() == 1) {
+				if (tops[c].has_value() && tops[c].value()) {
 					lapis::Point pt{ tops.xFromCell(c), tops.yFromCell(c) };
 					out.addGeometry(pt);
 					out.back().setNumericField<lapis::coord_t>("X", pt.x());
@@ -256,8 +256,8 @@ namespace processedfolder {
 		return std::optional<std::string>();
 	}
 
-	std::optional<lapis::Raster<int>> LidRFolder::topsRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return topsRaster(n); });
+	std::optional<lapis::Raster<uint8_t>> LidRFolder::topsRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<uint8_t>(e, _layout, [&](size_t n) { return topsRaster(n); });
 	}
 
 	std::optional<fs::path> LidRFolder::watershedSegmentRaster(size_t index) const {
