@@ -191,7 +191,7 @@ namespace processedfolder {
 			}
 		}
 		auto out = lapis::emptyVectorDatasetFromTemplate(full);
-		for (auto ft : full) {
+		for (lapis::ConstFeature<lapis::Point> ft : full) {
 			if (e.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
 				out.addFeature(ft);
 			}
