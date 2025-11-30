@@ -55,6 +55,10 @@ namespace processedfolder {
 		virtual lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const = 0;
 		virtual std::optional<std::filesystem::path> highPoints(size_t index) const = 0;
 
+		virtual lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const = 0;
+		virtual lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const = 0;
+		virtual std::optional<std::filesystem::path> polygons(size_t index) const = 0;
+
 		virtual std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const = 0;
 
@@ -66,6 +70,11 @@ namespace processedfolder {
 
 		virtual std::optional<std::filesystem::path> csmRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const = 0;
+
+		virtual lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
+		virtual lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
+		virtual lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
+		virtual lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
 
 		virtual ~ProcessedFolder() = default;
 	};

@@ -53,6 +53,11 @@ namespace processedfolder {
 
 		std::optional<std::filesystem::path> mcGaugheyPolygons(size_t index) const;
 		std::optional<std::filesystem::path> mcGaugheyPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const;
+		lapis::VectorDataset<lapis::MultiPolygon> mcGaugheyPolygons(const lapis::Extent& e) const;
+
+		lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const override;
+		lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const override;
+		std::optional<std::filesystem::path> polygons(size_t index) const override;
 
 		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
 		std::optional<std::filesystem::path> watershedSegmentRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
@@ -70,6 +75,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> csmRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
+		lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
 	private:
 		std::filesystem::path _folder;
 		lapis::Raster<bool> _layoutRaster;

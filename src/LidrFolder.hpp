@@ -3,6 +3,7 @@
 #define LIDRFOLDER_H
 
 #include "ProcessedFolder.hpp"
+#include "RasterAlgos.hpp"
 
 namespace processedfolder {
 	//This is just for rxgaming so it doesn't support most standard gridmetrics style layers
@@ -32,12 +33,15 @@ namespace processedfolder {
 		std::optional<lapis::Alignment> metricAlignment() const override;
 		std::optional<lapis::Alignment> csmAlignment() const override;
 
-
 		std::optional<lapis::Extent> extentByTile(size_t index) const override;
 
 		lapis::VectorDataset<lapis::Point> allHighPoints() const override;
 		std::optional<std::filesystem::path> highPoints(size_t index) const override;
 		lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const override;
+
+		lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const override;
+		lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const override;
+		std::optional<std::filesystem::path> polygons(size_t index) const override;
 
 		std::optional<std::filesystem::path> topsRaster(size_t index) const;
 		std::optional<lapis::Raster<uint8_t>> topsRaster(const lapis::Extent& e) const;
@@ -54,6 +58,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
+		lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
 	private:
 		std::filesystem::path _folder;
 		lapis::VectorDataset<lapis::MultiPolygon> _layout;

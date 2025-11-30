@@ -78,6 +78,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> highPoints(size_t index) const override;
 		lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const override;
 
+		lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const override;
+		lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const override;
+		std::optional<std::filesystem::path> polygons(size_t index) const override;
+
 		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
 		std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const override;
 
@@ -90,11 +94,20 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
+		lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
 	private:
 		std::filesystem::path _folder;
 		std::filesystem::path _layoutPath;
 		lapis::VectorDataset<lapis::Polygon> _layout;
 		lapis::CoordRef _proj;
+
+		mutable std::string _x = "";
+		mutable std::string _y = "";
+		mutable std::string _a = "";
+		mutable std::string _h = "";
 
 		std::optional<std::filesystem::path> _getMetric(const std::string& basename, const std::string& folderBaseName) const;
 		std::optional<std::filesystem::path> _getTopoMetric(const std::string& basename, lapis::coord_t radiusMeters) const;

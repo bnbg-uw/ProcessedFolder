@@ -487,6 +487,68 @@ namespace processedfolder {
 		return mcGaugheyPolygons(_layoutRaster.cellFromRowColUnsafe(row, col));
 	}
 
+	lapis::VectorDataset<lapis::MultiPolygon> LapisFolder::mcGaugheyPolygons(const lapis::Extent& e) const
+	{
+		lapis::VectorDataset<lapis::MultiPolygon> out{};
+		bool outInit = false;
+
+		lapis::Extent projE = lapis::QuadExtent(e, _layout.crs()).outerExtent();
+		if (!projE.overlaps(_layout.extent())) {
+			return out;
+		}
+
+		for (size_t i = 0; i < _layout.nFeature(); ++i) {
+			std::optional<fs::path> filePath = mcGaugheyPolygons(i);
+			if (filePath) {
+				auto tileExtent = extentByTile(i).value();
+				if (!projE.overlaps(tileExtent)) {
+					continue;
+				}
+				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ filePath.value() };
+				if (thisPolygons.nFeature()) {
+					if (!outInit) {
+						out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
+					}
+
+					for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
+						if (projE.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
+							if (tileExtent.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
+								out.addFeature(ft);
+							}
+						}
+					}
+				}
+			}
+		}
+		return out;
+	}
+
+	lapis::VectorDataset<lapis::MultiPolygon> LapisFolder::allPolygons() const {
+		lapis::VectorDataset<lapis::MultiPolygon> out{};
+		auto ntile = nTiles();
+		std::optional<fs::path> file;
+		for (size_t cell = 0; cell < ntile; ++cell) {
+			file = mcGaugheyPolygons(cell);
+			if (file) {
+				if (out.nFeature()) {
+					out.appendFile(file.value());
+				}
+				else {
+					out = lapis::VectorDataset<lapis::MultiPolygon>(file.value());
+				}
+			}
+		}
+		return out;
+	}
+
+	lapis::VectorDataset<lapis::MultiPolygon> LapisFolder::polygons(const lapis::Extent& e) const {
+		return mcGaugheyPolygons(e);
+	}
+
+	std::optional<fs::path> LapisFolder::polygons(size_t index) const {
+		return mcGaugheyPolygons(index);
+	}
+
 	template<class T>
 	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::Raster<bool>& tileLayout, std::function<std::optional<fs::path>(size_t)> byTile) {
 		std::optional<lapis::Raster<T>> out{};
@@ -673,6 +735,22 @@ namespace processedfolder {
 			}
 		}
 		return std::optional<fs::path>();
+	}
+
+	lapis::CoordXY LapisFolder::coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return { ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y") };
+	}
+	
+	lapis::coord_t LapisFolder::heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return ft.getNumericField<lapis::coord_t>("Height");
+	}
+	
+	lapis::coord_t LapisFolder::radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return std::sqrt(areaGetter(ft) / M_PI);
+	}
+	
+	lapis::coord_t LapisFolder::areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return ft.getGeometry().area();
 	}
 
 	bool isLapisFolder(const fs::path& path)

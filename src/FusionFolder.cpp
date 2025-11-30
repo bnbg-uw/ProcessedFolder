@@ -193,6 +193,7 @@ namespace processedfolder {
 		a = extendAlignment(a, extent(), lapis::SnapType::out);
 		return a;
 	}
+
 	std::optional<lapis::Extent> FusionFolder::extentByTile(size_t index) const
 	{
 		if (index < 0 || index >= nTiles()) {
@@ -203,46 +204,38 @@ namespace processedfolder {
 
 	lapis::VectorDataset<lapis::Point> FusionFolder::allHighPoints() const
 	{
-		lapis::VectorDataset<lapis::Point> out{};
-		auto ntile = nTiles();
-		std::optional<fs::path> file;
-		for (int i = 0; i < ntile; ++i) {
-			file = highPoints(i);
-			if (file) {
-				if (out.nFeature()) {
-					out.appendFile(file.value());
-				}
-				else {
-					out = lapis::VectorDataset<lapis::Point>(file.value());
-				}
-			}
-		}
-		return out;
+		return highPoints(_layout.extent());
 	}
 
 	lapis::VectorDataset<lapis::Point> FusionFolder::highPoints(const lapis::Extent& e) const {
-		lapis::VectorDataset<lapis::Point> full{};
+		lapis::VectorDataset<lapis::Point> out{};
+		bool outInit = false;
 
 		lapis::Extent projE = lapis::QuadExtent(e, _layout.crs()).outerExtent();
 		if (!projE.overlaps(_layout.extent())) {
-			return full;
+			return out;
 		}
 
 		for (size_t i = 0; i < _layout.nFeature(); ++i) {
 			std::optional<fs::path> filePath = highPoints(i);
 			if (filePath) {
-				if (!full.nFeature()) {
-					full = lapis::VectorDataset<lapis::Point>(filePath.value());
+				auto tileExtent = extentByTile(i).value();
+				if (!projE.overlaps(tileExtent)) {
+					continue;
 				}
-				else {
-					full.appendFile(filePath.value());
+				lapis::VectorDataset<lapis::Point> thisPoints{ filePath.value() };
+				if (thisPoints.nFeature()) {
+					if (!outInit) {
+						out = lapis::emptyVectorDatasetFromTemplate(thisPoints);
+					}
+					for (lapis::ConstFeature<lapis::Point> ft : thisPoints) {
+						if (projE.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
+							if (tileExtent.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
+								out.addFeature(ft);
+							}
+						}
+					}
 				}
-			}
-		}
-		auto out = lapis::emptyVectorDatasetFromTemplate(full);
-		for (auto ft : full) {
-			if (e.contains(ft.getGeometry().x(), ft.getGeometry().y())) {
-				out.addFeature(ft);
 			}
 		}
 		return out;
@@ -257,6 +250,78 @@ namespace processedfolder {
 		fs::path thissegments = segments / (identifier + "_segments_Polygons.shp");
 		if (fs::exists(thissegments)) {
 			return thissegments;
+		}
+		return std::optional<fs::path>();
+	}
+
+	lapis::VectorDataset<lapis::MultiPolygon> FusionFolder::allPolygons() const {
+		return polygons(_layout.extent());
+	}
+	
+	lapis::VectorDataset<lapis::MultiPolygon> FusionFolder::polygons(const lapis::Extent& e) const {
+		lapis::VectorDataset<lapis::MultiPolygon> out;
+		std::regex xr{ ".*HighX.*" };
+		std::regex yr{ ".*HighY.*" };
+		std::regex ar{ ".*Area.*" };
+		std::regex hr{ ".*MaxHt.*" };
+
+		lapis::Extent projE = lapis::QuadExtent(e, _layout.crs()).outerExtent();
+		if (!projE.overlaps(_layout.extent())) {
+			return out;
+		}
+
+		for (size_t i = 0; i < nTiles(); ++i) {
+			auto polygonFile = polygons(i);
+			if (polygonFile) {
+				auto tileExtent = extentByTile(i).value();
+				if (!projE.overlaps(tileExtent)) {
+					continue;
+				}
+				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ polygonFile.value() };
+				if (_x == "") {
+					for (auto name : thisPolygons.getAllFieldNames()) {
+						if (std::regex_match(name, xr)) {
+							_x = name;
+						}
+						else if (std::regex_match(name, yr)) {
+							_y = name;
+						}
+						else if (std::regex_match(name, ar)) {
+							_a = name;
+						}
+						else if (std::regex_match(name, hr)) {
+							_h = name;
+						}
+					}
+					if (_x == "" || _y == "" || _a == "" || _h == "") {
+						std::cerr << "Found polygon files but could not deduce one of x,y,area, or height from the column names.\n";
+						std::cerr << polygonFile.value().string() << "\n";
+						throw FileNotFoundException("Found polygon files but could not deduce one of x,y,area, or height from the column names.");
+					}
+					out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
+				}
+				for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
+					auto x = ft.getNumericField<lapis::coord_t>(_x);
+					auto y = ft.getNumericField<lapis::coord_t>(_y);
+					if (tileExtent.contains(x, y) && projE.contains(x, y)) {
+						out.addFeature(ft);
+					}
+				}
+			}
+		}
+		return out;
+	}
+	
+	std::optional<fs::path> FusionFolder::polygons(size_t index) const {
+		auto identifier = this->_layout.getStringField(index, "Identifier");
+		fs::path candidate = _folder / "Segments_2p4606FEET" / (identifier + "_segments_Polygons.shp");
+		if (fs::exists(candidate)) {
+			return candidate;
+		}
+		candidate = _folder / "Segments_0p75METERS" / (identifier + "_segments_Polygons.shp");
+
+		if (fs::exists(candidate)) {
+			return candidate;
 		}
 		return std::optional<fs::path>();
 	}
@@ -285,7 +350,7 @@ namespace processedfolder {
 				}
 				lapis::Raster<T> tile{ filePath.value().string(), projE, lapis::SnapType::out };
 				tile.defineCRS(tileLayout.crs());
-				out->overlay(tile, [](T a, T b) {return a; });
+				out->overlayInside(tile);
 			}
 			catch (lapis::LapisGisException e) {
 				continue;
@@ -345,8 +410,26 @@ namespace processedfolder {
 
 		return out;
 	}
-	std::optional<lapis::Raster<double>> FusionFolder::csmRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layout, [&](int n) { return csmRaster(n); });
+
+	std::optional<lapis::Raster<double>> FusionFolder::csmRaster(const lapis::Extent& e) const
+	{
+		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return csmRaster(n); });
+	}
+
+	lapis::CoordXY FusionFolder::coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return { ft.getNumericField<lapis::coord_t>(_x), ft.getNumericField<lapis::coord_t>(_y) };
+	}
+
+	lapis::coord_t FusionFolder::heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return ft.getNumericField<lapis::coord_t>(_h);
+	}
+
+	lapis::coord_t FusionFolder::radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return std::sqrt(areaGetter(ft) / M_PI);
+	}
+
+	lapis::coord_t FusionFolder::areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
+		return ft.getNumericField<lapis::coord_t>(_a);
 	}
 
 	std::optional<fs::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const
@@ -395,7 +478,7 @@ namespace processedfolder {
 				}
 			}
 			return std::optional<std::string>();
-			};
+		};
 
 		std::optional<std::string> out = lookForFile("_30METERS", 1);
 		if (out.has_value()) {
