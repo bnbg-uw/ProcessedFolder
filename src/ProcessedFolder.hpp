@@ -22,6 +22,12 @@ namespace processedfolder {
 		}
 	}
 
+	enum RunType {
+		lapis,
+		fusion,
+		lidr
+	};
+
 	class ProcessedFolder {
 	public:
 		virtual const std::filesystem::path dir() const = 0;
@@ -41,6 +47,7 @@ namespace processedfolder {
 		virtual std::optional<std::filesystem::path> tpi(lapis::coord_t radius, lapis::LinearUnit unit) const = 0;
 		
 		//utility functions
+		virtual const RunType type() const = 0;
 		virtual std::optional<std::filesystem::path> tileLayoutVector() const = 0;
 		virtual size_t nTiles() const = 0;
 		virtual const lapis::CoordRef crs() const = 0;

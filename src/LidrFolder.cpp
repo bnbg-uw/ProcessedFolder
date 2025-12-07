@@ -70,6 +70,10 @@ namespace processedfolder {
 	std::optional<fs::path> LidRFolder::tpi(lapis::coord_t radiusMeters, lapis::LinearUnit unit) const {
 		return std::optional<fs::path>();
 	}
+
+	const RunType LidRFolder::type() const {
+		return RunType::lidr;
+	}
 	
 	std::optional<fs::path> LidRFolder::tileLayoutVector() const {
 		auto path = _folder / "layout" / "layout.shp";
@@ -301,13 +305,13 @@ namespace processedfolder {
 				if (tops[c].has_value() && tops[c].value()) {
 					auto x = tops.xFromCell(c);
 					auto y = tops.yFromCell(c);
-					auto id = basin.extract(x, y, lapis::ExtractMethod::near);
-					if (id.has_value()) {
+					basin.extract(x, y, lapis::ExtractMethod::near);
+					/*if (id.has_value()) {
 						auto h = chm.extract(x, y, lapis::ExtractMethod::near);
 						xMap.emplace(id.value(), x);
 						yMap.emplace(id.value(), y);
 						hMap.emplace(id.value(), h.value());
-					}
+					}*/
 				}
 			}
 			

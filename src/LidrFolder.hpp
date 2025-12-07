@@ -26,6 +26,7 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> aspect(lapis::coord_t radius, lapis::LinearUnit unit) const override;
 		std::optional<std::filesystem::path> tpi(lapis::coord_t radius, lapis::LinearUnit unit) const override;
 
+		const RunType type() const override;
 		std::optional<std::filesystem::path> tileLayoutVector() const override;
 		size_t nTiles() const override;
 		const lapis::CoordRef crs() const override;

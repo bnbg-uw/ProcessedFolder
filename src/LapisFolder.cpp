@@ -218,6 +218,10 @@ namespace processedfolder {
 		return _getMetricByName(name, allReturns);
 	}
 
+	const RunType LapisFolder::type() const {
+		return RunType::lapis;
+	}
+
 	std::optional<fs::path> LapisFolder::tileLayoutVector() const
 	{
 		fs::path layoutPath = _folder / "Layout" / "TileLayout.shp";

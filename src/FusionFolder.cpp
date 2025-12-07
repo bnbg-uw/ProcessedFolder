@@ -145,6 +145,10 @@ namespace processedfolder {
 		return _getTopoMetric("tpi", converter(radius));
 	}
 
+	const RunType FusionFolder::type() const {
+		return RunType::fusion;
+	}
+
 	std::optional<fs::path> FusionFolder::tileLayoutVector() const
 	{
 		if (fs::exists(_layoutPath)) {
