@@ -4,9 +4,15 @@ SETLOCAL
 
 rmdir /S /Q build
 
-pushd src\lapisgis
-git pull
-popd
+IF EXIST src\lapisgis\ (
+	pushd src\lapisgis\
+	git pull
+	popd
+) ELSE (
+	pushd src
+	git clone --recurse-submodules https://github.com/jontkane/LapisGis
+	popd
+)
 
 mkdir build
 pushd build
