@@ -3,7 +3,7 @@
 #define PROCESSEDFOLDER_H
 
 #include "ProcessedFolder_pch.hpp"
-#include "LapisGis/src/Raster.hpp"
+#include "Raster.hpp"
 
 namespace processedfolder {
 	
