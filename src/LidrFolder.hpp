@@ -30,6 +30,7 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> tileLayoutVector() const override;
 		size_t nTiles() const override;
 		const lapis::CoordRef crs() const override;
+		const lapis::Extent& extent() const override;
 		std::optional<lapis::LinearUnit> units() const override;
 		std::optional<lapis::Alignment> metricAlignment() const override;
 		std::optional<lapis::Alignment> csmAlignment() const override;

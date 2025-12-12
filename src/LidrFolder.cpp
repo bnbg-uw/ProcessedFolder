@@ -90,6 +90,11 @@ namespace processedfolder {
 		return _proj;
 	}
 
+	const lapis::Extent& LidRFolder::extent() const
+	{
+		return _layout.extent();
+	}
+
 	std::optional<lapis::LinearUnit> LidRFolder::units() const {
 		return _layout.crs().getXYLinearUnits();
 	}

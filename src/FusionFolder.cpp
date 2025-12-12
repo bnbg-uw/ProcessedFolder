@@ -164,6 +164,12 @@ namespace processedfolder {
 	{
 		return _proj;
 	}
+
+	const lapis::Extent& FusionFolder::extent() const
+	{
+		return _layout.extent();
+	}
+
 	std::optional<lapis::LinearUnit> FusionFolder::units() const
 	{
 		return _layout.crs().getXYLinearUnits();
