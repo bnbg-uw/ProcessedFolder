@@ -76,10 +76,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> csmRaster(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
 
-		lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
-		lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
-		lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
-		lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const override;
+		std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> coordGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> heightGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> radiusGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> areaGetter() const override;
 	private:
 		std::filesystem::path _folder;
 		lapis::Raster<bool> _layoutRaster;

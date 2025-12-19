@@ -426,20 +426,28 @@ namespace processedfolder {
 		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return csmRaster(n); });
 	}
 
-	lapis::CoordXY FusionFolder::coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
-		return { ft.getNumericField<lapis::coord_t>(_x), ft.getNumericField<lapis::coord_t>(_y) };
+	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::coordGetter() const {
+		return [x = _x, y = _y](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::CoordXY {
+			return { ft.getNumericField<lapis::coord_t>(x), ft.getNumericField<lapis::coord_t>(y) };
+			};
 	}
 
-	lapis::coord_t FusionFolder::heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
-		return ft.getNumericField<lapis::coord_t>(_h);
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::heightGetter() const {
+		return [h = _h](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+			return ft.getNumericField<lapis::coord_t>(h);
+			};
 	}
 
-	lapis::coord_t FusionFolder::radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
-		return std::sqrt(areaGetter(ft) / M_PI);
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::radiusGetter() const {
+		return [a = _a](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+			return std::sqrt(ft.getNumericField<lapis::coord_t>(a) / M_PI);
+			};
 	}
 
-	lapis::coord_t FusionFolder::areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const {
-		return ft.getNumericField<lapis::coord_t>(_a);
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::areaGetter() const {
+		return [a = _a](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+			return ft.getNumericField<lapis::coord_t>(a);
+			};
 	}
 
 	std::optional<fs::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const

@@ -78,10 +78,10 @@ namespace processedfolder {
 		virtual std::optional<std::filesystem::path> csmRaster(size_t index) const = 0;
 		virtual std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const = 0;
 
-		virtual lapis::CoordXY coordGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
-		virtual lapis::coord_t heightGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
-		virtual lapis::coord_t radiusGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
-		virtual lapis::coord_t areaGetter(const lapis::ConstFeature<lapis::MultiPolygon> ft) const = 0;
+		virtual std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> coordGetter() const = 0;
+		virtual std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> heightGetter() const = 0;
+		virtual std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> radiusGetter() const = 0;
+		virtual std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> areaGetter() const = 0;
 
 		virtual ~ProcessedFolder() = default;
 	};
