@@ -6,10 +6,10 @@ file(GLOB PROCESSEDFOLDER_SOURCES
 	${PROCESSEDFOLDER_DIR}/src/*.hpp
 	${PROCESSEDFOLDER_DIR}/src/*.cpp)
 
-if(EXISTS "${PROCESSEDFOLDER_DIR}/src/LapisGis/lapisgis.cmake")
-	include("${PROCESSEDFOLDER_DIR}/src/LapisGis/lapisgis.cmake")
+if(EXISTS "${PROCESSEDFOLDER_DIR}/src/LapisGis/LapisGis.cmake")
+	include("${PROCESSEDFOLDER_DIR}/src/LapisGis/LapisGis.cmake")
 else()
-	include("${PROCESSEDFOLDER_DIR}/../LapisGis/lapisgis.cmake")
+	include("${PROCESSEDFOLDER_DIR}/../LapisGis/LapisGis.cmake")
 endif()
 
 set(PROCESSEDFOLDER_EXTERNAL_INCLUDES
@@ -25,7 +25,7 @@ target_include_directories(ProcessedFolder PRIVATE ${PROCESSEDFOLDER_EXTERNAL_IN
 target_precompile_headers(ProcessedFolder PRIVATE ${PROCESSEDFOLDER_DIR}/src/ProcessedFolder_pch.hpp)
 	
 set(PROCESSEDFOLDER_INCLUDES
-	${PROCESSFOLDER_EXTERNAL_INCLUDES}
+	${PROCESSEDFOLDER_EXTERNAL_INCLUDES}
 	${PROCESSEDFOLDER_DIR}/src
 	)
 set(PROCESSEDFOLDER_LINKS
