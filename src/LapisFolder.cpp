@@ -163,7 +163,7 @@ namespace processedfolder {
 	std::optional<fs::path> LapisFolder::slope(lapis::coord_t radius, lapis::LinearUnit unit) const
 	{
 		if (radius > 0) {
-			std::cout << "Warning: Radius discarded as Lapis does not use a radius for this metric\n";
+			std::cout << "Warning: Radius discarded as Lapis does not use a radius for slope\n";
 		}
 		return _getMetricByName("Slope");
 	}
@@ -171,7 +171,7 @@ namespace processedfolder {
 	std::optional<fs::path> LapisFolder::aspect(lapis::coord_t radius, lapis::LinearUnit unit) const
 	{
 		if (radius > 0) {
-			std::cout << "Warning: Radius discarded as Lapis does not use a radius for this metric\n";
+			std::cout << "Warning: Radius discarded as Lapis does not use a radius for aspect\n";
 		}
 		return _getMetricByName("Aspect");
 	}
@@ -185,7 +185,7 @@ namespace processedfolder {
 		if (!fs::exists(topoFolder)) {
 			return std::optional<fs::path>();
 		}
-		std::regex deleteBefore{ "^" + _name + "TopoPositionIndex_" };
+		std::regex deleteBefore{ "^" + _name + "_TopoPositionIndex_" };
 		std::regex deleteAfter{ "(Meters_Meters|Feet_Feet)\\.tif$" };
 		for (const auto& fn : fs::directory_iterator(topoFolder)) {
 			std::string scaleName = fn.path().filename().string();
