@@ -83,7 +83,6 @@ namespace processedfolder {
 	private:
 		std::filesystem::path _folder;
 		lapis::Raster<bool> _layoutRaster;
-		lapis::VectorDataset<lapis::Polygon> _layout;
 		std::string _name;
 
 		std::optional<std::filesystem::path> _getMetricByName(const std::string& baseName, bool allReturns = true) const;

@@ -478,7 +478,6 @@ namespace processedfolder {
 		if (fs::exists(candidate)) {
 			return candidate;
 		}
-
 		return std::optional<fs::path>();
 	}
 
@@ -496,34 +495,33 @@ namespace processedfolder {
 		lapis::VectorDataset<lapis::MultiPolygon> out{};
 		bool outInit = false;
 
-		lapis::Extent projE = lapis::QuadExtent(e, _layout.crs()).outerExtent();
-		if (!projE.overlaps(_layout.extent())) {
+		lapis::Extent projE = lapis::QuadExtent(e, _layoutRaster.crs()).outerExtent();
+		if (!projE.overlaps(_layoutRaster)) {
 			return out;
 		}
-
-		for (size_t i = 0; i < _layout.nFeature(); ++i) {
-			std::optional<fs::path> filePath = mcGaugheyPolygons(i);
+		for (auto cell : lapis::CellIterator(_layoutRaster, projE, lapis::SnapType::out)) {
+			std::optional<fs::path> filePath = mcGaugheyPolygons(cell);
 			if (filePath) {
-				auto tileExtent = extentByTile(i).value();
-				if (!projE.overlaps(tileExtent)) {
-					continue;
-				}
 				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ filePath.value() };
+				std::cout << "lapisfolder thispolygons: " << thisPolygons.nFeature() << "\n";
 				if (thisPolygons.nFeature()) {
 					if (!outInit) {
 						out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
+						outInit = true;
 					}
 
+					int i = 0;
 					for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
 						if (projE.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
-							if (tileExtent.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
-								out.addFeature(ft);
-							}
+							++i;
+							out.addFeature(ft);
 						}
 					}
+					std::cout << "i = " << i << " out.nFeature() = " << out.nFeature() << "\n";
 				}
 			}
 		}
+		std::cout << "lapisfolder out size: " << out.nFeature() << "\n";
 		return out;
 	}
 
