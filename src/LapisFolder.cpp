@@ -76,8 +76,8 @@ namespace processedfolder {
 			OGREnvelope envelope;
 			layer->GetExtent(&envelope, true);
 			OGRSpatialReference* sr = layer->GetSpatialRef();
-			UniqueGdalString wkt = exportToWktWrapper(*sr);
-			Extent e{ envelope.MinX,envelope.MaxX,envelope.MinY,envelope.MaxY,CoordRef(wkt.get()) };
+			CoordRef crs = CoordRef(sr);
+			Extent e{ envelope.MinX,envelope.MaxX,envelope.MinY,envelope.MaxY,crs };
 			return e;
 			};
 		auto extentFromFeature = [](OGRFeature& feature) {
