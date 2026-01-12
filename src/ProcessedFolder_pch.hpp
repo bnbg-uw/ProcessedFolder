@@ -8,7 +8,10 @@
 #include<filesystem>
 #include<regex>
 #include<queue>
+
 #include<Raster.hpp>
+#include<RasterAlgos.hpp>
+#include<boost/program_options.hpp>
 
 //these types are defined in Lapis, not LapisGis, so I'm redefining them here
 namespace lapis {

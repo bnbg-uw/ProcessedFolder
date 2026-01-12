@@ -3,7 +3,6 @@
 #define LAPISFOLDER_H
 
 #include "ProcessedFolder.hpp"
-#include "boost/program_options.hpp"
 
 namespace processedfolder {
 	class LapisFolder : public ProcessedFolder {

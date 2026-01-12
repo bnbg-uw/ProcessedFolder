@@ -3,7 +3,7 @@
 #define LIDRFOLDER_H
 
 #include "ProcessedFolder.hpp"
-#include "RasterAlgos.hpp"
+
 
 namespace processedfolder {
 	//This is just for rxgaming so it doesn't support most standard gridmetrics style layers
