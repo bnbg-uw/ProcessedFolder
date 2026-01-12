@@ -3,7 +3,6 @@
 #define PROCESSEDFOLDER_H
 
 #include "ProcessedFolder_pch.hpp"
-#include "Raster.hpp"
 
 namespace processedfolder {
 	
@@ -67,16 +66,16 @@ namespace processedfolder {
 		virtual std::optional<std::filesystem::path> polygons(size_t index) const = 0;
 
 		virtual std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const = 0;
-		virtual std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const = 0;
+		virtual std::optional<lapis::Raster<lapis::taoid_t>> watershedSegmentRaster(const lapis::Extent& e) const = 0;
 
 		virtual std::optional<std::filesystem::path> intensityRaster(size_t index) const = 0;
-		virtual std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const = 0;
+		virtual std::optional<lapis::Raster<lapis::intensity_t>> intensityRaster(const lapis::Extent& e) const = 0;
 
 		virtual std::optional<std::filesystem::path> maxHeightRaster(size_t index) const = 0;
-		virtual std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const = 0;
+		virtual std::optional<lapis::Raster<lapis::csm_t>> maxHeightRaster(const lapis::Extent& e) const = 0;
 
 		virtual std::optional<std::filesystem::path> csmRaster(size_t index) const = 0;
-		virtual std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const = 0;
+		virtual std::optional<lapis::Raster<lapis::csm_t>> csmRaster(const lapis::Extent& e) const = 0;
 
 		virtual std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> coordGetter() const = 0;
 		virtual std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> heightGetter() const = 0;

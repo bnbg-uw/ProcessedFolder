@@ -374,9 +374,9 @@ namespace processedfolder {
 		return _getTileMetric("segments_Basin_Map.img", index);
 	}
 
-	std::optional<lapis::Raster<int>> FusionFolder::watershedSegmentRaster(const lapis::Extent& e) const
+	std::optional<lapis::Raster<lapis::taoid_t>> FusionFolder::watershedSegmentRaster(const lapis::Extent& e) const
 	{
-		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return watershedSegmentRaster(n); });
+		return fineDataByExtentGeneric<lapis::taoid_t>(e, _layout, [&](size_t n) { return watershedSegmentRaster(n); });
 	}
 
 	std::optional<fs::path> FusionFolder::intensityRaster(size_t index) const
@@ -384,9 +384,9 @@ namespace processedfolder {
 		return _getTileMetric("segments_INT_GE_2m_UNITS.img", index);
 	}
 
-	std::optional<lapis::Raster<int>> FusionFolder::intensityRaster(const lapis::Extent& e) const
+	std::optional<lapis::Raster<lapis::intensity_t>> FusionFolder::intensityRaster(const lapis::Extent& e) const
 	{
-		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return intensityRaster(n); });
+		return fineDataByExtentGeneric<lapis::intensity_t>(e, _layout, [&](size_t n) { return intensityRaster(n); });
 	}
 
 	std::optional<fs::path> FusionFolder::maxHeightRaster(size_t index) const
@@ -394,9 +394,9 @@ namespace processedfolder {
 		return _getTileMetric("segments_Max_Height_Map.img", index);
 	}
 
-	std::optional<lapis::Raster<double>> FusionFolder::maxHeightRaster(const lapis::Extent& e) const
+	std::optional<lapis::Raster<lapis::csm_t>> FusionFolder::maxHeightRaster(const lapis::Extent& e) const
 	{
-		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return maxHeightRaster(n); });
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return maxHeightRaster(n); });
 	}
 
 	std::optional<fs::path> FusionFolder::csmRaster(size_t index) const
@@ -421,9 +421,9 @@ namespace processedfolder {
 		return out;
 	}
 
-	std::optional<lapis::Raster<double>> FusionFolder::csmRaster(const lapis::Extent& e) const
+	std::optional<lapis::Raster<lapis::csm_t>> FusionFolder::csmRaster(const lapis::Extent& e) const
 	{
-		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return csmRaster(n); });
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return csmRaster(n); });
 	}
 
 	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::coordGetter() const {

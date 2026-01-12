@@ -621,8 +621,8 @@ namespace processedfolder {
 		return watershedSegmentRaster(_layoutRaster.cellFromRowColUnsafe(row, col));
 	}
 
-	std::optional<lapis::Raster<int>> LapisFolder::watershedSegmentRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](size_t n) { return watershedSegmentRaster(n); });
+	std::optional<lapis::Raster<lapis::taoid_t>> LapisFolder::watershedSegmentRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::taoid_t>(e, _layoutRaster, [&](size_t n) { return watershedSegmentRaster(n); });
 	}
 
 	std::optional<fs::path> LapisFolder::intensityRaster(size_t index) const
@@ -649,8 +649,8 @@ namespace processedfolder {
 		return intensityRaster(_layoutRaster.cellFromRowColUnsafe(row, col));
 	}
 
-	std::optional<lapis::Raster<int>> LapisFolder::intensityRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layoutRaster, [&](size_t n) { return intensityRaster(n); });
+	std::optional<lapis::Raster<lapis::intensity_t>> LapisFolder::intensityRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::intensity_t>(e, _layoutRaster, [&](size_t n) { return intensityRaster(n); });
 	}
 
 	std::optional<fs::path> LapisFolder::maxHeightRaster(size_t index) const
@@ -692,8 +692,8 @@ namespace processedfolder {
 		return maxHeightRaster(_layoutRaster.cellFromRowColUnsafe(row, col));
 	}
 
-	std::optional<lapis::Raster<double>> LapisFolder::maxHeightRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](size_t n) { return maxHeightRaster(n); });
+	std::optional<lapis::Raster<lapis::csm_t>> LapisFolder::maxHeightRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layoutRaster, [&](size_t n) { return maxHeightRaster(n); });
 	}
 
 
@@ -713,8 +713,8 @@ namespace processedfolder {
 		return csmRaster(_layoutRaster.cellFromRowColUnsafe(row, col));
 	}
 
-	std::optional<lapis::Raster<double>> LapisFolder::csmRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layoutRaster, [&](size_t n) { return csmRaster(n); });
+	std::optional<lapis::Raster<lapis::csm_t>> LapisFolder::csmRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layoutRaster, [&](size_t n) { return csmRaster(n); });
 	}
 
 	std::optional<fs::path> LapisFolder::_getMetricByName(const std::string& name, bool preferAllReturns) const
