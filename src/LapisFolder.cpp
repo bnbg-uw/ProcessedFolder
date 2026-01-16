@@ -499,6 +499,7 @@ namespace processedfolder {
 		if (!projE.overlaps(_layoutRaster)) {
 			return out;
 		}
+
 		for (auto cell : lapis::CellIterator(_layoutRaster, projE, lapis::SnapType::out)) {
 			std::optional<fs::path> filePath = mcGaugheyPolygons(cell);
 			if (filePath) {
@@ -510,14 +511,11 @@ namespace processedfolder {
 						outInit = true;
 					}
 
-					int i = 0;
 					for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
 						if (projE.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
-							++i;
 							out.addFeature(ft);
 						}
 					}
-					std::cout << "i = " << i << " out.nFeature() = " << out.nFeature() << "\n";
 				}
 			}
 		}
