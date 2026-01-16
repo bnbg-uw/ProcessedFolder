@@ -145,14 +145,14 @@ namespace processedfolder {
 			lapis::VectorDataset<lapis::Point> out{};
 			out.addNumericField<lapis::coord_t>("X");
 			out.addNumericField<lapis::coord_t>("Y");
-			out.addNumericField<double>("Height");
+			out.addNumericField<lapis::csm_t>("Height");
 			out.addNumericField<lapis::coord_t>("Area");
 
 			auto basin = lapis::Raster<int>(stringOrThrow(watershedSegmentRaster(index)));
-			auto chm = lapis::Raster<double>(stringOrThrow(csmRaster(index)));
+			auto chm = lapis::Raster<lapis::csm_t>(stringOrThrow(csmRaster(index)));
 			auto tops = lapis::Raster<uint8_t>(stringOrThrow(topsRaster(index)));
 
-			std::map<int, double> map;
+			std::map<int, lapis::csm_t> map;
 			for (lapis::cell_t c = 0; c < basin.ncell(); c++) {
 				if (basin[c].has_value()) {
 					map.emplace(basin[c].value(), 0);
@@ -166,7 +166,7 @@ namespace processedfolder {
 					out.addGeometry(pt);
 					out.back().setNumericField<lapis::coord_t>("X", pt.x());
 					out.back().setNumericField<lapis::coord_t>("Y", pt.y());
-					out.back().setNumericField<double>("Height", chm[c].value());
+					out.back().setNumericField<lapis::csm_t>("Height", chm[c].value());
 					out.back().setNumericField<lapis::coord_t>("Area", map[basin[c].value()] * convarea);
 				}
 			}
@@ -292,10 +292,10 @@ namespace processedfolder {
 			auto out = lapis::rasterToMultiPolygonForTaos(basin);
 			out.addNumericField<lapis::coord_t>("X");
 			out.addNumericField<lapis::coord_t>("Y");
-			out.addNumericField<double>("Height");
+			out.addNumericField<lapis::csm_t>("Height");
 			out.addNumericField<lapis::coord_t>("Area");
 
-			std::unordered_map<int, double> aMap;
+			std::unordered_map<int, lapis::csm_t> aMap;
 			for (lapis::cell_t c = 0; c < basin.ncell(); c++) {
 				if (basin[c].has_value()) {
 					aMap.emplace(basin[c].value(), 0);
@@ -325,7 +325,7 @@ namespace processedfolder {
 				auto id = ft.getNumericField<int>("ID");
 				ft.setNumericField<lapis::coord_t>("X", xMap[id]);
 				ft.setNumericField<lapis::coord_t>("y", yMap[id]);
-				ft.setNumericField<double>("Height", hMap[id]);
+				ft.setNumericField<lapis::csm_t>("Height", hMap[id]);
 				ft.setNumericField<lapis::coord_t>("Area", aMap[id]);
 			}
 			out.writeShapefile(expected.string());
@@ -424,16 +424,16 @@ namespace processedfolder {
 		return std::optional<fs::path>();
 	}
 
-	std::optional<lapis::Raster<int>> LidRFolder::watershedSegmentRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<int>(e, _layout, [&](size_t n) { return watershedSegmentRaster(n); });
+	std::optional<lapis::Raster<lapis::taoid_t>> LidRFolder::watershedSegmentRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::taoid_t>(e, _layout, [&](size_t n) { return watershedSegmentRaster(n); });
 	}
 
 	std::optional<fs::path> LidRFolder::intensityRaster(size_t index) const {
 		return std::optional<fs::path>();
 	}
 
-	std::optional<lapis::Raster<int>> LidRFolder::intensityRaster(const lapis::Extent& e) const {
-		return std::optional<lapis::Raster<int>>();
+	std::optional<lapis::Raster<lapis::intensity_t>> LidRFolder::intensityRaster(const lapis::Extent& e) const {
+		return std::optional<lapis::Raster<lapis::intensity_t>>();
 	}
 
 	std::optional<fs::path> LidRFolder::maxHeightRaster(size_t index) const {
@@ -460,10 +460,10 @@ namespace processedfolder {
 
 		std::cout << "creating mhm for first time access\n";
 		auto basin = lapis::Raster<int>(stringOrThrow(watershedSegmentRaster(index)));
-		auto chm = lapis::Raster<double>(stringOrThrow(csmRaster(index)));
+		auto chm = lapis::Raster<lapis::csm_t>(stringOrThrow(csmRaster(index)));
 		auto tops = lapis::Raster<int>(stringOrThrow(topsRaster(index)));
 
-		std::map<int, double> map;
+		std::map<int, lapis::csm_t> map;
 		for (lapis::cell_t c = 0; c < tops.ncell(); c++) {
 			if (tops[c].has_value() && tops[c].value() == 1) {
 				auto b = basin[c].value();
@@ -481,8 +481,8 @@ namespace processedfolder {
 		return expected.string();
 	}
 
-	std::optional<lapis::Raster<double>> LidRFolder::maxHeightRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return maxHeightRaster(n); });
+	std::optional<lapis::Raster<lapis::csm_t>> LidRFolder::maxHeightRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return maxHeightRaster(n); });
 	}
 
 	std::optional<fs::path> LidRFolder::csmRaster(size_t index) const {
@@ -509,8 +509,8 @@ namespace processedfolder {
 		return std::optional<std::string>();
 	}
 
-	std::optional<lapis::Raster<double>> LidRFolder::csmRaster(const lapis::Extent& e) const {
-		return fineDataByExtentGeneric<double>(e, _layout, [&](size_t n) { return csmRaster(n); });
+	std::optional<lapis::Raster<lapis::csm_t>> LidRFolder::csmRaster(const lapis::Extent& e) const {
+		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return csmRaster(n); });
 	}
 
 	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> LidRFolder::coordGetter() const {

@@ -85,16 +85,16 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> polygons(size_t index) const override;
 
 		std::optional<std::filesystem::path> watershedSegmentRaster(size_t index) const override;
-		std::optional<lapis::Raster<int>> watershedSegmentRaster(const lapis::Extent& e) const override;
+		std::optional<lapis::Raster<lapis::taoid_t>> watershedSegmentRaster(const lapis::Extent& e) const override;
 
 		std::optional<std::filesystem::path> intensityRaster(size_t index) const override;
-		std::optional<lapis::Raster<int>> intensityRaster(const lapis::Extent& e) const override;
+		std::optional<lapis::Raster<lapis::intensity_t>> intensityRaster(const lapis::Extent& e) const override;
 
 		std::optional<std::filesystem::path> maxHeightRaster(size_t index) const override;
-		std::optional<lapis::Raster<double>> maxHeightRaster(const lapis::Extent& e) const override;
+		std::optional<lapis::Raster<lapis::csm_t>> maxHeightRaster(const lapis::Extent& e) const override;
 
 		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
-		std::optional<lapis::Raster<double>> csmRaster(const lapis::Extent& e) const override;
+		std::optional<lapis::Raster<lapis::csm_t>> csmRaster(const lapis::Extent& e) const override;
 
 		std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> coordGetter() const override;
 		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> heightGetter() const override;
