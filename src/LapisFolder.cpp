@@ -504,7 +504,6 @@ namespace processedfolder {
 			std::optional<fs::path> filePath = mcGaugheyPolygons(cell);
 			if (filePath) {
 				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ filePath.value() };
-				std::cout << "lapisfolder thispolygons: " << thisPolygons.nFeature() << "\n";
 				if (thisPolygons.nFeature()) {
 					if (!outInit) {
 						out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
@@ -519,7 +518,6 @@ namespace processedfolder {
 				}
 			}
 		}
-		std::cout << "lapisfolder out size: " << out.nFeature() << "\n";
 		return out;
 	}
 
