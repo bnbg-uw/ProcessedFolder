@@ -496,7 +496,7 @@ namespace processedfolder {
 		bool outInit = false;
 
 		lapis::Extent projE = lapis::QuadExtent(e, _layoutRaster.crs()).outerExtent();
-		if (!projE.overlaps(_layoutRaster)) {
+		if (!projE.overlapsUnsafe(_layoutRaster)) {
 			return out;
 		}
 
@@ -526,6 +526,7 @@ namespace processedfolder {
 		auto ntile = nTiles();
 		std::optional<fs::path> file;
 		for (size_t cell = 0; cell < ntile; ++cell) {
+            std::cout << "Processing tile " << cell + 1 << " of " << ntile << "\n";
 			file = mcGaugheyPolygons(cell);
 			if (file) {
 				if (out.nFeature()) {
