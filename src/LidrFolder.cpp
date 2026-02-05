@@ -212,17 +212,14 @@ namespace processedfolder {
 		lapis::VectorDataset<lapis::MultiPolygon> out{};
 		auto ntile = nTiles();
 		std::optional<fs::path> file;
+		std::vector<std::filesystem::path> files;
 		for (size_t cell = 0; cell < ntile; ++cell) {
 			file = polygons(cell);
 			if (file) {
-				if (out.nFeature()) {
-					out.appendFile(file.value());
-				}
-				else {
-					out = lapis::VectorDataset<lapis::MultiPolygon>(file.value());
-				}
+				files.push_back(*file);
 			}
 		}
+		out = lapis::VectorDataset<lapis::MultiPolygon>(files);
 		return out;
 	}
 

@@ -531,7 +531,6 @@ namespace processedfolder {
 		std::optional<fs::path> file;
 		std::vector<std::filesystem::path> files;
 		for (size_t cell = 0; cell < ntile; ++cell) {
-            std::cout << "Processing tile " << cell + 1 << " of " << ntile << "\n";
 			file = mcGaugheyPolygons(cell);
 			if (file) {
 				files.push_back(*file);
