@@ -500,9 +500,10 @@ namespace processedfolder {
 		bool outInit = false;
 
 		lapis::Extent projE = lapis::QuadExtent(e, _layoutRaster.crs()).outerExtent();
-		if (!projE.overlaps(_layoutRaster)) {
+		if (!projE.overlapsUnsafe(_layoutRaster)) {
 			return out;
 		}
+
 		for (auto cell : lapis::CellIterator(_layoutRaster, projE, lapis::SnapType::out)) {
 			std::optional<fs::path> filePath = mcGaugheyPolygons(cell);
 			if (filePath) {
@@ -513,10 +514,8 @@ namespace processedfolder {
 						outInit = true;
 					}
 
-					int i = 0;
 					for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
 						if (projE.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
-							++i;
 							out.addFeature(ft);
 						}
 					}
@@ -532,6 +531,7 @@ namespace processedfolder {
 		std::optional<fs::path> file;
 		std::vector<std::filesystem::path> files;
 		for (size_t cell = 0; cell < ntile; ++cell) {
+            std::cout << "Processing tile " << cell + 1 << " of " << ntile << "\n";
 			file = mcGaugheyPolygons(cell);
 			if (file) {
 				files.push_back(*file);
