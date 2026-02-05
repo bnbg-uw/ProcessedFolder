@@ -477,6 +477,10 @@ namespace processedfolder {
 		candidate = _folder / "TreeApproximateObjects" / "McGaugheyPolygons" / "SegmentPolygons" / getName("McGaugheyPolygons");
 		if (fs::exists(candidate)) {
 			return candidate;
+        }
+		candidate = _folder / "TreeApproximateObjects" / "McGaughey" / "SegmentPolygons" / getName("Segments");
+		if (fs::exists(candidate)) {
+			return candidate;
 		}
 		return std::optional<fs::path>();
 	}
@@ -503,7 +507,6 @@ namespace processedfolder {
 			std::optional<fs::path> filePath = mcGaugheyPolygons(cell);
 			if (filePath) {
 				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ filePath.value() };
-				std::cout << "lapisfolder thispolygons: " << thisPolygons.nFeature() << "\n";
 				if (thisPolygons.nFeature()) {
 					if (!outInit) {
 						out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
@@ -517,11 +520,9 @@ namespace processedfolder {
 							out.addFeature(ft);
 						}
 					}
-					std::cout << "i = " << i << " out.nFeature() = " << out.nFeature() << "\n";
 				}
 			}
 		}
-		std::cout << "lapisfolder out size: " << out.nFeature() << "\n";
 		return out;
 	}
 
@@ -529,17 +530,14 @@ namespace processedfolder {
 		lapis::VectorDataset<lapis::MultiPolygon> out{};
 		auto ntile = nTiles();
 		std::optional<fs::path> file;
+		std::vector<std::filesystem::path> files;
 		for (size_t cell = 0; cell < ntile; ++cell) {
 			file = mcGaugheyPolygons(cell);
 			if (file) {
-				if (out.nFeature()) {
-					out.appendFile(file.value());
-				}
-				else {
-					out = lapis::VectorDataset<lapis::MultiPolygon>(file.value());
-				}
+				files.push_back(*file);
 			}
 		}
+		out = lapis::VectorDataset<lapis::MultiPolygon>(files);
 		return out;
 	}
 

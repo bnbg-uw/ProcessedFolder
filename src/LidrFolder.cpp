@@ -17,7 +17,7 @@ namespace processedfolder {
 			return;
 		}
 		_proj = lapis::Raster<int>(maskRaster().value().string()).crs();
-		_layout.projectInPlacePreciseExtent(_proj);
+		_layout.projectInPlace(_proj);
 	}
 
 	const fs::path LidRFolder::dir() const
