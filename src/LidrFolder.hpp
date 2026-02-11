@@ -60,10 +60,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> csmRaster(size_t index) const override;
 		std::optional<lapis::Raster<lapis::csm_t>> csmRaster(const lapis::Extent& e) const override;
 
-		std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> coordGetter() const override;
-		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> heightGetter() const override;
-		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> radiusGetter() const override;
-		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> areaGetter() const override;
+		std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::Point>&)> coordGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> heightGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> radiusGetter() const override;
+		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> areaGetter() const override;
 	private:
 		std::filesystem::path _folder;
 		lapis::VectorDataset<lapis::MultiPolygon> _layout;
