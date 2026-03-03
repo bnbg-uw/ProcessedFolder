@@ -268,8 +268,9 @@ namespace processedfolder {
 			}
 			return out;
 			};
-		int nDigits = (int)std::ceil(std::log10(std::max(_layoutRaster.ncol(), _layoutRaster.nrow())));
-		return "Col" + padZeroes(col + 1, nDigits) + "_Row" + padZeroes(row + 1, nDigits); //the names are 1-indexed, but it's 0-indexed internally
+		int nDigitsCol = (int)std::ceil(std::log10(_layoutRaster.ncol()));
+		int nDigitsRow = (int)std::ceil(std::log10(_layoutRaster.nrow()));
+		return "Col" + padZeroes(col + 1, nDigitsCol) + "_Row" + padZeroes(row + 1, nDigitsRow); //the names are 1-indexed, but it's 0-indexed internally
 	}
 
 	bool LapisFolder::shouldTileExist(size_t n) const
