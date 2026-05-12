@@ -61,15 +61,19 @@ namespace processedfolder {
 
 		fs::path iniFile = folder / "RunParameters" / "FullParameters.ini";
 		try {
-			po::options_description nameGetter;
-			nameGetter.add_options()("name", po::value<std::string>(&_name));
-			po::variables_map vmFull;
-			po::store(po::parse_config_file(iniFile.string().c_str(), nameGetter, true), vmFull);
-			po::notify(vmFull);
-			_name = vmFull.at("name").as<std::string>();
+			boost::property_tree::ptree pt;
+			boost::property_tree::ini_parser::read_ini(iniFile.string(), pt);
+
+			for (const auto& section : pt) {
+				_iniParameters[section.first] = section.second.get_value<std::string>();
+			}
+
+			if (_iniParameters.count("name")) {
+				_name = _iniParameters.at("name");
+			}
 		}
-		catch (...) {
-			throw std::runtime_error(folder.string() + " has an issue in FullParameters.ini");
+		catch (const boost::property_tree::ini_parser_error& e) {
+			throw std::runtime_error(folder.string() + " has an issue in FullParameters.ini: " + e.what());
 		}
 
 		auto extentFromLayer = [](OGRLayer* layer) {
@@ -754,6 +758,15 @@ namespace processedfolder {
 		return [](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return ft.getNumericField<lapis::coord_t>("Area");
 			};
+	}
+
+	std::optional<std::string> LapisFolder::getIniParameter(const std::string& parameterName) const
+	{
+		auto it = _iniParameters.find(parameterName);
+		if (it != _iniParameters.end()) {
+			return it->second;
+		}
+		return std::nullopt;
 	}
 
 	bool isLapisFolder(const fs::path& path)

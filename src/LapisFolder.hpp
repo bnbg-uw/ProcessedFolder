@@ -79,12 +79,16 @@ namespace processedfolder {
 		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> heightGetter() const override;
 		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> radiusGetter() const override;
 		std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> areaGetter() const override;
+
+		std::optional<std::string> getIniParameter(const std::string& parameterName) const;
 	private:
 		std::filesystem::path _folder;
 		lapis::Raster<bool> _layoutRaster;
 		std::string _name;
 
 		std::optional<std::filesystem::path> _getMetricByName(const std::string& baseName, bool allReturns = true) const;
+
+		std::map<std::string, std::string> _iniParameters;
 	};
 
 	//this checks for two things: the presence of TileLayout.shp, and the presence of FullParameters.ini

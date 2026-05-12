@@ -12,6 +12,8 @@
 #include<Raster.hpp>
 #include<RasterAlgos.hpp>
 #include<boost/program_options.hpp>
+#include<boost/property_tree/ptree.hpp>
+#include<boost/property_tree/ini_parser.hpp>
 
 //these types are defined in Lapis, not LapisGis, so I'm redefining them here
 namespace lapis {
