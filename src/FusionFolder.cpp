@@ -338,6 +338,21 @@ namespace processedfolder {
 		return std::optional<fs::path>();
 	}
 
+	std::optional<std::filesystem::path> FusionFolder::watershedPolygons(size_t index) const
+	{
+		return std::nullopt;
+	}
+
+	std::optional<std::filesystem::path> FusionFolder::watershedPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const
+	{
+		return std::nullopt;
+	}
+
+	lapis::VectorDataset<lapis::MultiPolygon> FusionFolder::watershedPolygons(const lapis::Extent& e) const
+	{
+		return lapis::VectorDataset<lapis::MultiPolygon>(e.crs());
+	}
+
 	template<class T>
 	std::optional<lapis::Raster<T>> fineDataByExtentGeneric(const lapis::Extent& e, const lapis::VectorDataset<lapis::Polygon>& tileLayout, std::function<std::optional<fs::path>(size_t)> byTile) {
 		std::optional<lapis::Raster<T>> out{};
