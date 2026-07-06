@@ -524,27 +524,51 @@ namespace processedfolder {
 		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return csmRaster(n); });
 	}
 
-	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::coordGetter() const {
+	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::coordGetterPoint() const {
 		return [](const lapis::ConstFeature<lapis::Point>& ft)->lapis::CoordXY {
 			return lapis::CoordXY(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"));
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::heightGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::heightGetterPoint() const {
 		return [](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return ft.getNumericField<lapis::coord_t>("Height");
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::radiusGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::radiusGetterPoint() const {
 		return [](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return std::sqrt(ft.getNumericField<lapis::coord_t>("Area"));
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::areaGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> LidRFolder::areaGetterPoint() const {
 		return [](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return ft.getNumericField<lapis::coord_t>("Area");
 			}; 
 	}
+	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> LidRFolder::coordGetterPolygon() const
+	{
+		return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::CoordXY {
+			return lapis::CoordXY(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"));
+			};
+	}
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> LidRFolder::heightGetterPolygon() const
+    {
+        return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+            return ft.getNumericField<lapis::coord_t>("Height");
+            };
+    }
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> LidRFolder::radiusGetterPolygon() const
+    {
+        return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+            return std::sqrt(ft.getGeometry().area() / M_PI);
+            };
+    }
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> LidRFolder::areaGetterPolygon() const
+    {
+        return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+            return ft.getGeometry().area();
+            };
+    }
 }

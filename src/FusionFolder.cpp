@@ -443,29 +443,54 @@ namespace processedfolder {
 		return fineDataByExtentGeneric<lapis::csm_t>(e, _layout, [&](size_t n) { return csmRaster(n); });
 	}
 
-	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::coordGetter() const {
+	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::coordGetterPoint() const {
 		return [x = _x, y = _y](const lapis::ConstFeature<lapis::Point>& ft)->lapis::CoordXY {
 			return { ft.getNumericField<lapis::coord_t>(x), ft.getNumericField<lapis::coord_t>(y) };
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::heightGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::heightGetterPoint() const {
 		return [h = _h](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return ft.getNumericField<lapis::coord_t>(h);
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::radiusGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::radiusGetterPoint() const {
 		return [a = _a](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return std::sqrt(ft.getNumericField<lapis::coord_t>(a) / M_PI);
 			};
 	}
 
-	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::areaGetter() const {
+	std::function<lapis::coord_t(const lapis::ConstFeature<lapis::Point>&)> FusionFolder::areaGetterPoint() const {
 		return [a = _a](const lapis::ConstFeature<lapis::Point>& ft)->lapis::coord_t {
 			return ft.getNumericField<lapis::coord_t>(a);
 			};
 	}
+
+	std::function<lapis::CoordXY(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::coordGetterPolygon() const
+	{
+		return [x = _x, y = _y](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::CoordXY {
+			return { ft.getNumericField<lapis::coord_t>(x), ft.getNumericField<lapis::coord_t>(y) };
+			};
+	}
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::heightGetterPolygon() const
+    {
+        return [h = _h](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+            return ft.getNumericField<lapis::coord_t>(h);
+            };
+    }
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::radiusGetterPolygon() const
+    {
+        return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+			return std::sqrt(ft.getGeometry().area() / M_PI);
+            };
+    }
+    std::function<lapis::coord_t(const lapis::ConstFeature<lapis::MultiPolygon>&)> FusionFolder::areaGetterPolygon() const
+    {
+        return [](const lapis::ConstFeature<lapis::MultiPolygon>& ft)->lapis::coord_t {
+			return ft.getGeometry().area();
+            };
+    }
 
 	std::optional<fs::path> FusionFolder::_getMetric(const std::string& basename, const std::string& folderBaseName) const
 	{
