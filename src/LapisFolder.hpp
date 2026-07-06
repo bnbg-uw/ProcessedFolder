@@ -55,6 +55,10 @@ namespace processedfolder {
 		std::optional<std::filesystem::path> mcGaugheyPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const;
 		lapis::VectorDataset<lapis::MultiPolygon> mcGaugheyPolygons(const lapis::Extent& e) const;
 
+        std::optional<std::filesystem::path> watershedPolygons(size_t index) const override;
+        std::optional<std::filesystem::path> watershedPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const override;
+        lapis::VectorDataset<lapis::MultiPolygon> watershedPolygons(const lapis::Extent& e) const override;
+
 		lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const override;
 		lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const override;
 		std::optional<std::filesystem::path> polygons(size_t index) const override;

@@ -45,6 +45,10 @@ namespace processedfolder {
 		lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const override;
 		std::optional<std::filesystem::path> polygons(size_t index) const override;
 
+		std::optional<std::filesystem::path> watershedPolygons(size_t index) const override;
+		std::optional<std::filesystem::path> watershedPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const override;
+		lapis::VectorDataset<lapis::MultiPolygon> watershedPolygons(const lapis::Extent& e) const override;
+
 		std::optional<std::filesystem::path> topsRaster(size_t index) const;
 		std::optional<lapis::Raster<uint8_t>> topsRaster(const lapis::Extent& e) const;
 

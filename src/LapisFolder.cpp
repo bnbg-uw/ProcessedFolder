@@ -526,6 +526,71 @@ namespace processedfolder {
 		return out;
 	}
 
+	std::optional<std::filesystem::path> LapisFolder::watershedPolygons(size_t index) const
+	{
+		if (index < 0 || index >= (size_t)_layoutRaster.ncell()) {
+			return std::optional<fs::path>();
+		}
+
+		auto getName = [&](const std::string& baseName) {
+			return name() + "_" + baseName + "_" + tileNameFromTile(index) + ".shp";
+			};
+
+		fs::path candidate = _folder / "TreeApproximateObjects" / getName("SegmentPolygons");
+		if (fs::exists(candidate)) {
+			return candidate;
+		}
+		candidate = _folder / "TreeApproximateObjects" / "SegmentPolygons" / getName("SegmentPolygons");
+		if (fs::exists(candidate)) {
+			return candidate;
+		}
+		candidate = _folder / "TreeApproximateObjects" / "Watershed" / "SegmentPolygons" / getName("Segments");
+		if (fs::exists(candidate)) {
+			return candidate;
+		}
+		return std::optional<fs::path>();
+	}
+
+	std::optional<std::filesystem::path> LapisFolder::watershedPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const
+	{
+		if (row < 0 || row >= _layoutRaster.nrow() || col < 0 || col >= _layoutRaster.ncol()) {
+			return std::optional<fs::path>();
+		}
+
+		return watershedPolygons(_layoutRaster.cellFromRowColUnsafe(row, col));
+	}
+
+	lapis::VectorDataset<lapis::MultiPolygon> LapisFolder::watershedPolygons(const lapis::Extent& e) const
+	{
+		lapis::VectorDataset<lapis::MultiPolygon> out{};
+		bool outInit = false;
+
+		lapis::Extent projE = lapis::QuadExtent(e, _layoutRaster.crs()).outerExtent();
+		if (!projE.overlapsUnsafe(_layoutRaster)) {
+			return out;
+		}
+
+		for (auto cell : lapis::CellIterator(_layoutRaster, projE, lapis::SnapType::out)) {
+			std::optional<fs::path> filePath = watershedPolygons(cell);
+			if (filePath) {
+				lapis::VectorDataset<lapis::MultiPolygon> thisPolygons{ filePath.value() };
+				if (thisPolygons.nFeature()) {
+					if (!outInit) {
+						out = lapis::emptyVectorDatasetFromTemplate(thisPolygons);
+						outInit = true;
+					}
+
+					for (lapis::ConstFeature<lapis::MultiPolygon> ft : thisPolygons) {
+						if (projE.contains(ft.getNumericField<lapis::coord_t>("X"), ft.getNumericField<lapis::coord_t>("Y"))) {
+							out.addFeature(ft);
+						}
+					}
+				}
+			}
+		}
+		return out;
+	}
+
 	lapis::VectorDataset<lapis::MultiPolygon> LapisFolder::allPolygons() const {
 		auto ntile = nTiles();
 		std::optional<fs::path> file;
@@ -570,6 +635,12 @@ namespace processedfolder {
 					a = cropAlignment(a, projE, lapis::SnapType::out);
 					out = lapis::Raster<T>{ a };
 				}
+
+				//this covers the very annoying issue where sometimes the CRS read from a tif is not the same as the CRS you specified when you wrote it
+				//this can cause even a proper lapis run to have raster files with CRSes that ar every flightly different from the CRS of the vector files
+				//clearing the CRS of the extent will cause it to match everything, so no mismatch errors will occur
+				projE.defineCRS(lapis::CoordRef("")); 
+
 				lapis::Raster<T> tile{ filePath.value().string(), projE, lapis::SnapType::out };
 				tile.defineCRS(tileLayout.crs());
 				out->overlay(tile, [](T a, T b) {return a; });

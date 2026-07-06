@@ -1,4 +1,4 @@
-SET vcpkg=C:\vcpkg
+SET vcpkg=D:\dev\vcpkg
 SET triplet=x64-windows
 SETLOCAL
 
