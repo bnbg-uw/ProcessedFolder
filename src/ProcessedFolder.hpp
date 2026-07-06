@@ -61,6 +61,10 @@ namespace processedfolder {
 		virtual lapis::VectorDataset<lapis::Point> highPoints(const lapis::Extent& e) const = 0;
 		virtual std::optional<std::filesystem::path> highPoints(size_t index) const = 0;
 
+		virtual std::optional<std::filesystem::path> watershedPolygons(size_t index) const = 0;
+		virtual std::optional<std::filesystem::path> watershedPolygons(lapis::rowcol_t row, lapis::rowcol_t col) const = 0;
+		virtual lapis::VectorDataset<lapis::MultiPolygon> watershedPolygons(const lapis::Extent& e) const = 0;
+
 		virtual lapis::VectorDataset<lapis::MultiPolygon> allPolygons() const = 0;
 		virtual lapis::VectorDataset<lapis::MultiPolygon> polygons(const lapis::Extent& e) const = 0;
 		virtual std::optional<std::filesystem::path> polygons(size_t index) const = 0;
